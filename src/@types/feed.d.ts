@@ -18,11 +18,14 @@ export interface FeedTag {
   y: number;
 }
 
+/** 원격 URL 문자열 또는 require()로 불러온 로컬 자산(number) */
+export type MediaSource = string | number;
+
 export interface FeedItem {
   id: string;
   type: MediaType;
-  /** 영상 또는 이미지 URL */
-  mediaUrl: string;
+  /** 영상(string URL) 또는 이미지(URL 또는 require 결과) */
+  mediaUrl: MediaSource;
   /** 영상의 경우 포스터/썸네일 (선택) */
   posterUrl?: string;
   /** 작성자/농장 이름 */

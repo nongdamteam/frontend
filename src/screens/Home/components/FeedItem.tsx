@@ -47,12 +47,12 @@ export function FeedItem({ item, isActive, onTagPress }: FeedItemProps) {
       <Pressable style={StyleSheet.absoluteFill} onPress={togglePause}>
         {isVideo ? (
           <FeedVideoPlayer
-            uri={item.mediaUrl}
+            uri={item.mediaUrl as string}
             posterUri={item.posterUrl}
             paused={paused}
           />
         ) : (
-          <FeedImageViewer uri={item.mediaUrl} />
+          <FeedImageViewer source={item.mediaUrl} />
         )}
       </Pressable>
 

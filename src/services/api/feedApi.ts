@@ -1,5 +1,5 @@
 import { FeedItem } from '@/@types/feed';
-import feedMock from '@/assets/mock/feed.json';
+import { FEED_MOCK } from '@/assets/mock/feed';
 import { mockResolve } from './client';
 
 /**
@@ -7,5 +7,5 @@ import { mockResolve } from './client';
  * TODO: 실제 API 연동 시 apiClient.get('/feed') 형태로 교체.
  */
 export function fetchFeed(): Promise<FeedItem[]> {
-  return mockResolve(feedMock as FeedItem[]);
+  return mockResolve(FEED_MOCK);
 }
