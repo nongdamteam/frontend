@@ -10,14 +10,18 @@ import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
 import BottomNavigationBar, { TabType } from './src/components/common/BottomNavigationBar';
+import { COLORS } from './src/theme/colors';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
     <SafeAreaProvider>
-      {/* Screen background is strictly white (#FFFFFF) */}
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor="#FFFFFF" />
+      {/* StatusBar color bound to centralized theme color background */}
+      <StatusBar
+        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+        backgroundColor={COLORS.background}
+      />
       <AppContent />
     </SafeAreaProvider>
   );
@@ -28,7 +32,7 @@ function AppContent() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Empty pure white content area */}
+      {/* Empty clean background content area */}
       <View style={styles.content} />
 
       {/* Common Reusable Bottom Navigation Bar */}
@@ -43,11 +47,11 @@ function AppContent() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background, // Dynamically bound to theme background (#FFFFFF)
   },
   content: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background, // Dynamically bound to theme background (#FFFFFF)
   },
 });
 

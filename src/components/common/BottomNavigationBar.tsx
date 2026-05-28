@@ -11,6 +11,7 @@ import BabsIcon from '../../assets/icons/BabsIcon';
 import HomeIcon from '../../assets/icons/HomeIcon';
 import CartIcon from '../../assets/icons/CartIcon';
 import ProfileIcon from '../../assets/icons/ProfileIcon';
+import { COLORS } from '../../theme/colors';
 
 export type TabType = 'babs' | 'home' | 'cart' | 'profile';
 
@@ -31,7 +32,6 @@ export const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
 }) => {
   const insets = useSafeAreaInsets();
 
-  // Animation values for each tab (Babs, Home, Cart, Profile)
   const scaleBabs = useRef(new Animated.Value(1)).current;
   const scaleHome = useRef(new Animated.Value(1)).current;
   const scaleCart = useRef(new Animated.Value(1)).current;
@@ -94,8 +94,8 @@ export const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
       <View style={styles.container}>
         {tabs.map((tab) => {
           const isActive = currentTab === tab.id;
-          const activeColor = '#A88454';
-          const inactiveColor = '#8E8E93';
+          const activeColor = COLORS.primary;
+          const inactiveColor = COLORS.inactive;
           const tabColor = isActive ? activeColor : inactiveColor;
           const scaleVal = getScaleValue(tab.id);
 
@@ -128,9 +128,9 @@ export const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderTopWidth: 1,
-    borderTopColor: '#F2ECE4',
+    borderTopColor: COLORS.border,
     shadowColor: '#A78B60',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.07,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     height: 60,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
   },
   tabButton: {
     flex: 1,
@@ -160,9 +160,9 @@ const styles = StyleSheet.create({
   indicator: {
     width: '38%',
     height: 4.5,
-    backgroundColor: '#A88454',
+    backgroundColor: COLORS.primary,
     borderRadius: 99,
-    shadowColor: '#A88454',
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 1.2 },
     shadowOpacity: 0.48,
     shadowRadius: 2.2,
