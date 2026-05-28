@@ -1,26 +1,21 @@
-import React, { useState } from 'react';
-import {
-  StatusBar,
-  StyleSheet,
-  View,
-  useColorScheme,
-  SafeAreaView,
-} from 'react-native';
-import {
-  SafeAreaProvider,
-} from 'react-native-safe-area-context';
-import BottomNavigationBar, { TabType } from './src/components/common/BottomNavigationBar';
-import { COLORS } from './src/theme/colors';
+import React, {useState} from 'react';
+import {StatusBar, StyleSheet, Text, View, useColorScheme} from 'react-native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+
+import BottomNavigationBar, {
+  TabType,
+} from './src/components/common/BottomNavigationBar';
+import HomeScreen from './src/screens/HomeScreen';
+import {COLORS} from './src/theme/colors';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
     <SafeAreaProvider>
-      {/* StatusBar color bound to centralized theme color background */}
       <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={COLORS.background}
+        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
       />
       <AppContent />
     </SafeAreaProvider>
@@ -31,27 +26,44 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Empty clean background content area */}
-      <View style={styles.content} />
+    <View style={styles.container}>
+      <View style={styles.content}>{renderTabContent(activeTab)}</View>
+      <BottomNavigationBar currentTab={activeTab} onTabChange={setActiveTab} />
+    </View>
+  );
+}
 
-      {/* Common Reusable Bottom Navigation Bar */}
-      <BottomNavigationBar
-        currentTab={activeTab}
-        onTabChange={(tab) => setActiveTab(tab)}
-      />
-    </SafeAreaView>
+function renderTabContent(activeTab: TabType) {
+  if (activeTab === 'home') {
+    return <HomeScreen />;
+  }
+
+  return (
+    <View style={styles.placeholder}>
+      <Text style={styles.placeholderText}>준비 중입니다</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: COLORS.background,
     flex: 1,
-    backgroundColor: COLORS.background, // Dynamically bound to theme background (#FFFFFF)
   },
   content: {
+    backgroundColor: COLORS.background,
     flex: 1,
-    backgroundColor: COLORS.background, // Dynamically bound to theme background (#FFFFFF)
+  },
+  placeholder: {
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  placeholderText: {
+    color: COLORS.inactive,
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
 
