@@ -1,9 +1,18 @@
 import 'react-native-gesture-handler';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { useState } from 'react';
+import {
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  useColorScheme,
+  View,
+} from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import BottomNavigationBar, { TabType } from './src/components/common/BottomNavigationBar';
+import { COLORS } from './src/theme/colors';
 import { HomeScreen } from '@/screens/Home/HomeScreen';
 
 const queryClient = new QueryClient({
@@ -25,12 +34,9 @@ function App() {
           <BottomSheetModalProvider>
             <StatusBar
               barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-              translucent
-              backgroundColor="transparent"
+              backgroundColor={COLORS.background}
             />
-            <View style={styles.container}>
-              <HomeScreen />
-            </View>
+            <AppContent />
           </BottomSheetModalProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
@@ -38,12 +44,32 @@ function App() {
   );
 }
 
+function AppContent() {
+  const [activeTab, setActiveTab] = useState<TabType>('home');
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        {activeTab === 'home' ? <HomeScreen /> : null}
+      </View>
+
+      <BottomNavigationBar
+        currentTab={activeTab}
+        onTabChange={tab => setActiveTab(tab)}
+      />
+    </SafeAreaView>
+  );
+}
+
 const styles = StyleSheet.create({
   root: { flex: 1 },
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: COLORS.background,
+  },
+  content: {
+    flex: 1,
+    backgroundColor: COLORS.background,
   },
 });
 
