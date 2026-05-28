@@ -6,6 +6,14 @@ const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
  *
  * @type {import('@react-native/metro-config').MetroConfig}
  */
-const config = {};
+const defaultConfig = getDefaultConfig(__dirname);
+const { resolver: { sourceExts } } = defaultConfig;
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+const config = {
+  resolver: {
+    // Explicitly enforce Metro resolving ts, tsx, js, jsx and json
+    sourceExts: [...new Set([...sourceExts, 'ts', 'tsx', 'js', 'jsx', 'json'])],
+  },
+};
+
+module.exports = mergeConfig(defaultConfig, config);
