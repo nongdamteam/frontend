@@ -1,44 +1,53 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  StatusBar,
+  StyleSheet,
+  View,
+  useColorScheme,
+  SafeAreaView,
+} from 'react-native';
 import {
   SafeAreaProvider,
-  useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import BottomNavigationBar, { TabType } from './src/components/common/BottomNavigationBar';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      {/* Screen background is strictly white (#FFFFFF) */}
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor="#FFFFFF" />
       <AppContent />
     </SafeAreaProvider>
   );
 }
 
 function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+  const [activeTab, setActiveTab] = useState<TabType>('home');
 
   return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
+    <SafeAreaView style={styles.container}>
+      {/* Empty pure white content area */}
+      <View style={styles.content} />
+
+      {/* Common Reusable Bottom Navigation Bar */}
+      <BottomNavigationBar
+        currentTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab)}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  content: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
   },
 });
 
