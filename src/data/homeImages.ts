@@ -4,7 +4,7 @@ type HomeImages = {
   groupBuys: Record<string, ImageSourcePropType | string>;
   hero: ImageSourcePropType | string;
   products: Record<string, ImageSourcePropType | string>;
-  ranks: ImageSourcePropType[];
+  ranks: Array<ImageSourcePropType | string>;
   recipes: Record<string, ImageSourcePropType | string>;
 };
 
