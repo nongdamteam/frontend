@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {StatusBar, StyleSheet, Text, View, useColorScheme} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {NavigationContainer} from '@react-navigation/native';
 
 import BottomNavigationBar, {
   TabType,
@@ -13,11 +14,13 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar
-        backgroundColor={COLORS.background}
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-      />
-      <AppContent />
+      <NavigationContainer>
+        <StatusBar
+          backgroundColor={COLORS.background}
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+        />
+        <AppContent />
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 }
