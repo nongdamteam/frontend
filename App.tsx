@@ -1,9 +1,9 @@
 import 'react-native-gesture-handler';
 import { useState } from 'react';
 import {
-  SafeAreaView,
   StatusBar,
   StyleSheet,
+  Text,
   useColorScheme,
   View,
 } from 'react-native';
@@ -11,8 +11,12 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import BottomNavigationBar, { TabType } from './src/components/common/BottomNavigationBar';
+import BottomNavigationBar, {
+  TabType,
+} from './src/components/common/BottomNavigationBar';
 import { COLORS } from './src/theme/colors';
+import HomeScreen from './src/screens/HomeScreen';
+import CartScreen from './src/screens/CartScreen';
 import { BabsScreen } from '@/screens/Babs/BabsScreen';
 
 const queryClient = new QueryClient({
@@ -59,36 +63,64 @@ function AppContent() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
         {isLanding ? (
           <BabsScreen
             onSwipeLeft={() => goToOffset(1)}
             onSwipeRight={() => goToOffset(-1)}
           />
-        ) : null}
+        ) : (
+          renderTabContent(activeTab)
+        )}
       </View>
 
       {/* 밥스(랜딩)에서는 하단바 숨김 — 좌우 스와이프로만 이동 가능 */}
       {!isLanding ? (
         <BottomNavigationBar
           currentTab={activeTab}
-          onTabChange={tab => setActiveTab(tab)}
+          onTabChange={setActiveTab}
         />
       ) : null}
-    </SafeAreaView>
+    </View>
+  );
+}
+
+function renderTabContent(activeTab: TabType) {
+  if (activeTab === 'home') {
+    return <HomeScreen />;
+  }
+  if (activeTab === 'cart') {
+    return <CartScreen />;
+  }
+
+  return (
+    <View style={styles.placeholder}>
+      <Text style={styles.placeholderText}>준비 중입니다</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
   container: {
-    flex: 1,
     backgroundColor: COLORS.background,
+    flex: 1,
   },
   content: {
-    flex: 1,
     backgroundColor: COLORS.background,
+    flex: 1,
+  },
+  placeholder: {
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  placeholderText: {
+    color: COLORS.inactive,
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
 
