@@ -16,6 +16,7 @@ import { colors, radius, shadow, spacing, typography } from '../styles/theme';
 import { COLORS } from '../theme/colors';
 import { cartImages } from '../data/cartImages';
 import { FarmGroupCard } from '../components/cart/FarmGroupCard';
+import OrderHistoryScreen from './OrderHistoryScreen';
 
 interface CartItem {
   id: string;
@@ -132,6 +133,7 @@ const initialItems: CartItem[] = [
 export default function CartScreen() {
   const [items, setItems] = useState<CartItem[]>(initialItems);
   const [farms, setFarms] = useState<Farm[]>(initialFarms);
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
 
   const BackIcon = () => (
     <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -326,6 +328,10 @@ export default function CartScreen() {
 
   const formatPrice = (price: number) => `${price.toLocaleString()}원`;
 
+  if (showOrderHistory) {
+    return <OrderHistoryScreen onBack={() => setShowOrderHistory(false)} />;
+  }
+
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       {/* Header */}
@@ -334,7 +340,7 @@ export default function CartScreen() {
           <BackIcon />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>장바구니</Text>
-        <TouchableOpacity style={styles.orderHistoryButton}>
+        <TouchableOpacity style={styles.orderHistoryButton} onPress={() => setShowOrderHistory(true)}>
           <Text style={styles.orderHistoryText}>주문내역</Text>
         </TouchableOpacity>
       </View>
