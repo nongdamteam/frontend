@@ -17,6 +17,7 @@ import { Typography } from '@/components/common/Typography';
 import { COLORS } from '@/constants/colors.local';
 import { RADIUS, SPACING } from '@/constants/layout';
 import { UploadProvider, useUploadContext } from './context/UploadContext';
+import { MediaSelectScreen } from './screens/MediaSelectScreen';
 
 export interface UploadModalRef {
   open: () => void;
@@ -32,9 +33,11 @@ export const UploadModal = forwardRef<UploadModalRef>((_props, ref) => {
   const modalRef = useRef<BottomSheetModal>(null);
   const [resetKey, setResetKey] = useState(0);
 
+  const close = useCallback(() => modalRef.current?.dismiss(), []);
+
   useImperativeHandle(ref, () => ({
     open: () => modalRef.current?.present(),
-    close: () => modalRef.current?.dismiss(),
+    close,
   }));
 
   const snapPoints = useMemo(() => ['95%'], []);
@@ -69,7 +72,7 @@ export const UploadModal = forwardRef<UploadModalRef>((_props, ref) => {
     >
       <BottomSheetView style={styles.content}>
         <UploadProvider key={resetKey}>
-          <StepRouter />
+          <StepRouter onClose={close} />
         </UploadProvider>
       </BottomSheetView>
     </BottomSheetModal>
@@ -80,12 +83,14 @@ UploadModal.displayName = 'UploadModal';
 
 /**
  * 현재 step에 따라 화면 분기.
- * 실제 화면은 4~7단계에서 추가됨.
  */
-function StepRouter() {
+function StepRouter({ onClose }: { onClose: () => void }) {
   const { step } = useUploadContext();
 
-  // TODO(4단계): MediaSelectScreen
+  if (step === 'media') {
+    return <MediaSelectScreen onClose={onClose} />;
+  }
+
   // TODO(5단계): DetailFormScreen
   // TODO(7단계): TagPositionScreen
   return (
