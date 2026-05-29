@@ -8,12 +8,15 @@ import {
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FeedItem as FeedItemType, FeedTag } from '@/@types/feed';
+import { FloatingButton } from '@/components/common/FloatingButton';
 import { Typography } from '@/components/common/Typography';
 import { COLORS } from '@/constants/colors.local';
-import { SCREEN } from '@/constants/layout';
+import { SCREEN, SPACING } from '@/constants/layout';
 import { useActiveVideoIndex } from '@/hooks/useActiveVideoIndex';
 import { ProductSheet, ProductSheetRef } from '@/screens/ProductSheet/ProductSheet';
+import { UploadModal, UploadModalRef } from '@/screens/Upload/UploadModal';
 import { FeedItem } from './components/FeedItem';
 import { useBabsFeed } from './hooks/useBabsFeed';
 
@@ -25,9 +28,15 @@ interface BabsScreenProps {
 }
 
 export function BabsScreen({ onSwipeLeft, onSwipeRight }: BabsScreenProps) {
+  const insets = useSafeAreaInsets();
   const { data, isLoading, isError } = useBabsFeed();
   const { activeIndex, viewabilityConfigCallbackPairs } = useActiveVideoIndex(0);
   const sheetRef = useRef<ProductSheetRef>(null);
+  const uploadModalRef = useRef<UploadModalRef>(null);
+
+  const handleUploadPress = useCallback(() => {
+    uploadModalRef.current?.open();
+  }, []);
 
   const handleTagPress = useCallback((tag: FeedTag) => {
     sheetRef.current?.open(tag.keyword);
@@ -102,6 +111,24 @@ export function BabsScreen({ onSwipeLeft, onSwipeRight }: BabsScreenProps) {
         })}
       />
       <ProductSheet ref={sheetRef} />
+
+      {/* 우상단 플로팅 + 버튼 — 업로드 모달 진입 */}
+      <FloatingButton
+        iconName="add"
+        iconSize={28}
+        size={52}
+        background="surface"
+        iconColor="textPrimary"
+        onPress={handleUploadPress}
+        accessibilityLabel="콘텐츠 업로드"
+        style={{
+          position: 'absolute',
+          top: insets.top + SPACING.md,
+          right: SPACING.lg,
+        }}
+      />
+
+      <UploadModal ref={uploadModalRef} />
       </View>
     </GestureDetector>
   );
