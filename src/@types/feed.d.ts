@@ -14,8 +14,12 @@ export interface FeedTag {
   averagePrice: number;
   /** 라벨 썸네일 이미지 (외부 URL 또는 require된 로컬 자산) */
   thumbnailUrl?: MediaSource;
-  x: number;
-  y: number;
+  /**
+   * 콘텐츠 위 좌표 (0~1 비율).
+   * 이미지 콘텐츠일 때만 사용되며, 영상은 좌표 없이 하단 strip으로 표시됨.
+   */
+  x?: number;
+  y?: number;
 }
 
 /** 원격 URL 문자열 또는 require()로 불러온 로컬 자산(number) */
