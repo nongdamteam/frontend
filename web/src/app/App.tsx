@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { ProductInquiryPage } from '../pages/product/ProductInquiryPage'
 import { ProductRegistrationPage } from '../pages/product/ProductRegistrationPage'
 import { ProductDetailPage } from '../pages/product/ProductDetailPage'
@@ -47,6 +47,7 @@ function App() {
   return (
     <ProductRegistrationPage
       initialMode={view === 'group-buy-register' ? '잔여수확 공동구매' : '일반판매'}
+      initialActiveView={view === 'group-buy-progress' ? 'activeGroupBuys' : 'registration'}
       onNavigate={setView}
     />
   )

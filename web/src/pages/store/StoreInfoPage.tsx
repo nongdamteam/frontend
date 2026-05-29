@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { PartnerShell } from '../../components/layout/PartnerShell'
 import type { AppView } from '../../app/appTypes'
 import { storeProfile } from '../../services/mockDb/commerceDummyData'
@@ -36,6 +36,7 @@ function readStoreDraft(fallback: StoreDraft): StoreDraft {
 }
 
 export function StoreInfoPage({ onNavigate }: StoreInfoPageProps) {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [feedback, setFeedback] = useState('수정할 항목을 확인한 뒤 저장하세요.')
   const [draft, setDraft] = useState<StoreDraft>(() =>
     readStoreDraft({
@@ -78,14 +79,19 @@ export function StoreInfoPage({ onNavigate }: StoreInfoPageProps) {
   }
 
   return (
-    <PartnerShell activeSidebarItem="상점 정보" onNavigate={onNavigate}>
+    <PartnerShell
+      activeSidebarItem="상점 정보"
+      onNavigate={onNavigate}
+      isSidebarCollapsed={isSidebarCollapsed}
+    >
       <div className="product-edit-page store-info-page">
         <div className="page-header">
           <button
             type="button"
             className="back-button"
-            aria-label="상품 등록 화면으로 이동"
-            onClick={() => onNavigate?.('product-register')}
+            aria-label={isSidebarCollapsed ? '사이드바 펼치기' : '사이드바 접기'}
+            aria-pressed={isSidebarCollapsed}
+            onClick={() => setIsSidebarCollapsed((current) => !current)}
           >
             <span className="chevron chevron--left" aria-hidden="true" />
           </button>

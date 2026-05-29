@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { PartnerShell } from '../../components/layout/PartnerShell'
 import type { AppView } from '../../app/appTypes'
 import { commerceProducts } from '../../services/mockDb/commerceDummyData'
@@ -14,6 +14,7 @@ type ProductStatus = '전체' | '판매중' | '판매대기'
 const PAGE_SIZE = 8
 
 function ProductInquiryPage({ onNavigate, onOpenProductDetail, onOpenProductEdit }: ProductInquiryPageProps) {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<ProductStatus>('전체')
@@ -41,14 +42,19 @@ function ProductInquiryPage({ onNavigate, onOpenProductDetail, onOpenProductEdit
   const hasMoreProducts = visibleCount < filteredProducts.length
 
   return (
-    <PartnerShell activeSidebarItem="상품 조회/수정" onNavigate={onNavigate}>
+    <PartnerShell
+      activeSidebarItem="상품 조회/수정"
+      onNavigate={onNavigate}
+      isSidebarCollapsed={isSidebarCollapsed}
+    >
       <div className="product-edit-page inquiry-page">
         <div className="page-header">
           <button
             type="button"
             className="back-button"
-            aria-label="상품 등록 화면으로 이동"
-            onClick={() => onNavigate?.('product-register')}
+            aria-label={isSidebarCollapsed ? '사이드바 펼치기' : '사이드바 접기'}
+            aria-pressed={isSidebarCollapsed}
+            onClick={() => setIsSidebarCollapsed((current) => !current)}
           >
             <span className="chevron chevron--left" aria-hidden="true" />
           </button>
