@@ -1,13 +1,20 @@
+import { useRef } from 'react';
 import { Alert, Image, StyleSheet, View } from 'react-native';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { ProductListItem } from '@/@types/product';
 import { Typography } from '@/components/common/Typography';
 import { COLORS } from '@/constants/colors.local';
 import { RADIUS, SPACING } from '@/constants/layout';
+import { createTempId } from '@/utils/id';
 import { useUploadDraft } from '../hooks/useUploadDraft';
 import { UploadHeader } from '../components/UploadHeader';
 import { CaptionInput } from '../components/CaptionInput';
 import { TagTray } from '../components/TagTray';
 import { PrivacySettings } from '../components/PrivacySettings';
+import {
+  ProductSearchSheet,
+  ProductSearchSheetRef,
+} from '../components/ProductSearchSheet';
 
 interface DetailFormScreenProps {
   onClose: () => void;
@@ -18,15 +25,31 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
     draft,
     setCaption,
     setPrivacy,
+    addTag,
     removeTag,
     goTo,
     canSubmit,
     hasPendingTags,
   } = useUploadDraft();
+  const searchSheetRef = useRef<ProductSearchSheetRef>(null);
 
   const handleAddTag = () => {
-    // TODO(6단계): 상품 검색 모달 오픈
-    Alert.alert('알림', '다음 단계에서 상품 검색 모달이 연결됩니다.');
+    searchSheetRef.current?.open();
+  };
+
+  const handleSearchSelect = (product: ProductListItem) => {
+    addTag({
+      id: createTempId('tag'),
+      keyword: product.keyword,
+      label: product.name,
+      thumbnailUrl:
+        typeof product.thumbnailUrl === 'string'
+          ? product.thumbnailUrl
+          : undefined,
+      averagePrice: product.pricePerUnit,
+      position: null,
+    });
+    searchSheetRef.current?.close();
   };
 
   const handleTagPress = () => {
@@ -93,6 +116,12 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
           업로드 후에도 캡션과 공개 설정은 변경할 수 있어요.
         </Typography>
       </BottomSheetScrollView>
+
+      <ProductSearchSheet
+        ref={searchSheetRef}
+        addedKeywords={draft.tags.map(t => t.keyword)}
+        onSelect={handleSearchSelect}
+      />
     </View>
   );
 }

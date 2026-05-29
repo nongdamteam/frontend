@@ -38,6 +38,24 @@ export function fetchProductsByKeyword(
 }
 
 /**
+ * 키워드로 상품 검색 (부분 일치).
+ * 업로드 시 상품 태그 검색용.
+ * TODO: apiClient.get('/products/search', { params: { q } }) 로 교체.
+ */
+export function searchProducts(query: string): Promise<ProductListItem[]> {
+  const q = query.trim();
+  if (!q) return mockResolve([]);
+
+  const lower = q.toLowerCase();
+  const matched = ALL_PRODUCTS.filter(
+    p =>
+      p.keyword.toLowerCase().includes(lower) ||
+      p.name.toLowerCase().includes(lower),
+  );
+  return mockResolve(matched);
+}
+
+/**
  * 상품 상세 조회.
  * TODO: apiClient.get(`/products/${id}`) 로 교체.
  */
