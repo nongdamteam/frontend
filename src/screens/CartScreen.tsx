@@ -17,6 +17,7 @@ import { COLORS } from '../theme/colors';
 import { cartImages } from '../data/cartImages';
 import { FarmGroupCard } from '../components/cart/FarmGroupCard';
 import OrderHistoryScreen from './OrderHistoryScreen';
+import DeliveryAddressScreen, { DeliveryAddress } from './DeliveryAddressScreen';
 import BackButton from '../components/common/BackButton';
 
 interface CartItem {
@@ -135,6 +136,14 @@ export default function CartScreen() {
   const [items, setItems] = useState<CartItem[]>(initialItems);
   const [farms, setFarms] = useState<Farm[]>(initialFarms);
   const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [showAddressScreen, setShowAddressScreen] = useState(false);
+  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress>({
+    id: 'addr-1',
+    label: '집',
+    address: '서울 강남구 테헤란로 152',
+    detail: '강남파이낸스센터 10층',
+    isEarlyMorning: true,
+  });
 
   const LocationIcon = () => (
     <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -327,6 +336,19 @@ export default function CartScreen() {
     return <OrderHistoryScreen onBack={() => setShowOrderHistory(false)} />;
   }
 
+  if (showAddressScreen) {
+    return (
+      <DeliveryAddressScreen
+        currentAddressId={deliveryAddress.id}
+        onBack={() => setShowAddressScreen(false)}
+        onSelect={(addr) => {
+          setDeliveryAddress(addr);
+          setShowAddressScreen(false);
+        }}
+      />
+    );
+  }
+
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       {/* Header */}
@@ -345,10 +367,12 @@ export default function CartScreen() {
             <LocationIcon />
             <View style={styles.locationTextWrapper}>
               <Text style={styles.locationLabel}>배송지</Text>
-              <Text style={styles.locationAddress}>서울 강남구 테헤란로 · 산지직송 가능</Text>
+              <Text style={styles.locationAddress}>
+                {deliveryAddress.address}{deliveryAddress.isEarlyMorning ? ' · 새벽배송 가능' : ''}
+              </Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.changeLocationButton}>
+          <TouchableOpacity style={styles.changeLocationButton} onPress={() => setShowAddressScreen(true)}>
             <Text style={styles.changeLocationText}>변경</Text>
           </TouchableOpacity>
         </View>
