@@ -1,9 +1,9 @@
 import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/navigation/types';
+import { HomeStackParamList } from '@/screens/HomeScreen';
 
-export type ProductDetailRouteProp = RouteProp<RootStackParamList, 'Details'>;
-export type ProductDetailNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Details'>;
+export type ProductDetailRouteProp = RouteProp<HomeStackParamList, 'Details'>;
+export type ProductDetailNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'Details'>;
 
 export interface ProductDetailProps {
   route: ProductDetailRouteProp;
