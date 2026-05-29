@@ -1,4 +1,4 @@
-import {ImageSourcePropType} from 'react-native';
+import { ImageSourcePropType } from 'react-native';
 
 type HomeImages = {
   groupBuys: Record<string, ImageSourcePropType | string>;
@@ -23,8 +23,8 @@ export const homeImages: HomeImages = {
     bibimbapTwo: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&auto=format&fit=crop&q=80',
   },
   groupBuys: {
-    cheorwon: 'https://images.unsplash.com/photo-1588854337221-4cf9fa96059c?w=500&auto=format&fit=crop&q=80',
-    haenam: 'https://images.unsplash.com/photo-1628773822503-930a8589c09c?w=500&auto=format&fit=crop&q=80',
+    cheorwon: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=500&auto=format&fit=crop&q=80',
+    haenam: 'https://images.unsplash.com/photo-1550147760-44c9966d6bc7?w=500&auto=format&fit=crop&q=80',
     seosan: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=500&auto=format&fit=crop&q=80',
     yeosu: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=500&auto=format&fit=crop&q=80',
   },

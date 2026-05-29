@@ -20,7 +20,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 1.5,
     participantsCount: 8,
-    image: 'https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?w=500&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '3',
@@ -30,7 +30,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 2.3,
     participantsCount: 12,
-    image: 'https://images.unsplash.com/photo-1604085792782-8d92f276d7d8?w=500&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '4',
@@ -50,7 +50,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: false,
     distance: 4.5,
     participantsCount: 0,
-    image: 'https://images.unsplash.com/photo-1628773822503-930a8589c09c?w=500&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '6',

@@ -1,11 +1,11 @@
 import { useCallback, useRef, useEffect } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
-  ListRenderItem,
   StyleSheet,
   View,
+  ListRenderItem,
 } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
 import { navigationService } from '@/services/navigationService';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
@@ -84,13 +84,12 @@ export function BabsScreen({ onSwipeLeft, onSwipeRight, onSwipeProgress, onSwipe
     );
   }
 
-  // 가로 스와이프 제스처: 우측 끝에서 좌측으로 충분히 그었을 때만 인식
-  // activeOffsetX: 가로 40px 이상 움직이면 제스처 활성
-  // failOffsetY: 세로로 5px 넘게 움직이면 제스처 실패 (피드 스크롤이 우선)
+  // 가로 스와이프 제스처: 좌우 충분히 그었을 때만 인식
+  // activeOffsetX: 가로 35px 이상 움직이면 제스처 활성
+  // failOffsetY: 세로로 15px 넘게 움직이면 제스처 실패 (피드 스크롤이 우선)
   const swipeGesture = Gesture.Pan()
-    .hitSlop({ right: 0, width: 70 })
-    .activeOffsetX([-40, 40])
-    .failOffsetY([-5, 5])
+    .activeOffsetX([-20, 20])
+    .failOffsetY([-8, 8])
     .onUpdate(event => {
       'worklet';
       if (onSwipeProgress) {

@@ -26,6 +26,7 @@ import {IProduct, SortOption} from '@/screens/ProductList/types';
 import {MOCK_PRODUCTS} from '@/screens/ProductList/hooks/useProducts';
 import { navigationService } from '@/services/navigationService';
 import { MOCK_RECIPES } from './RecipeList/RecipeListScreen';
+import RecipeDetailScreen from '@/screens/RecipeDetail/RecipeDetailScreen';
 
 type ScreenMode = 'main' | 'products';
 
@@ -115,6 +116,7 @@ export type HomeStackParamList = {
   ProductList: { isGroupPurchaseOnly?: boolean; searchQuery?: string; initialSortOption?: SortOption; isPopularRanking?: boolean } | undefined;
   Details: { product: IProduct; entryPoint?: 'home' | 'list' };
   RecipeList: undefined;
+  RecipeDetail: { recipeId: string };
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -161,6 +163,7 @@ function HomeScreen({ onSwipeProgress, onSwipeEnd }: HomeScreenProps) {
       <Stack.Screen name="ProductList" component={ProductListScreen} />
       <Stack.Screen name="Details" component={ProductDetailScreen} />
       <Stack.Screen name="RecipeList" component={RecipeListScreen} />
+      <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} />
     </Stack.Navigator>
   );
 }
@@ -191,9 +194,8 @@ function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
   }, [navigation]);
 
   const swipeGesture = Gesture.Pan()
-    .hitSlop({ left: 0, width: 70 })
-    .activeOffsetX([40, 99999])
-    .failOffsetY([-5, 5])
+    .activeOffsetX([20, 99999])
+    .failOffsetY([-8, 8])
     .onUpdate(event => {
       'worklet';
       if (onSwipeProgress) {
@@ -282,14 +284,7 @@ function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
                 <Pressable
                   key={recipe.id}
                   onPress={() => {
-                    if (recipe.id.startsWith('feed-')) {
-                      navigationService.redirectTab('babs');
-                      setTimeout(() => {
-                        navigationService.navigateToBabsFeed(recipe.id);
-                      }, 100);
-                    } else {
-                      handleOpenRecipes();
-                    }
+                    navigation.navigate('RecipeDetail', { recipeId: recipe.id });
                   }}
                   style={({pressed}) => [
                     styles.tileItem,

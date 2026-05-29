@@ -69,8 +69,8 @@ export const MOCK_RECIPES: RecipeItem[] = [
   },
   {
     id: 'r1',
-    title: '새콤달콤 밥도둑 봄동겉절이',
-    image: 'https://images.unsplash.com/photo-1628773822503-930a8589c09c?w=500&auto=format&fit=crop&q=80',
+    title: '새콤달콤 밥도둑 나물비빔밥',
+    image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=500&auto=format&fit=crop&q=80',
     aspectRatio: 0.8, // 400x500
     author: {
       nickname: 'najeongwhan',
@@ -172,7 +172,7 @@ function imageSource(image: any) {
 export function RecipeListScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  
+
   // 좋아요 인터랙션을 위한 개별 상태 관리
   const [likesData, setLikesData] = useState<Record<string, { count: number; liked: boolean }>>(
     MOCK_RECIPES.reduce((acc, item) => {
@@ -203,14 +203,7 @@ export function RecipeListScreen() {
     const likeInfo = likesData[item.id] || { count: item.likes, liked: false };
 
     const handlePress = () => {
-      if (item.id.startsWith('feed-')) {
-        navigationService.redirectTab('babs');
-        setTimeout(() => {
-          navigationService.navigateToBabsFeed(item.id);
-        }, 100);
-      } else {
-        Alert.alert('레시피 안내', '이 레시피는 준비 중입니다.');
-      }
+      (navigation as any).navigate('RecipeDetail', { recipeId: item.id });
     };
 
     return (
@@ -238,9 +231,9 @@ export function RecipeListScreen() {
               </Text>
             ))}
           </View>
-          
+
           <View style={styles.divider} />
-          
+
           <View style={styles.cardFooter}>
             <View style={styles.authorContainer}>
               <Image source={{ uri: item.author.avatar }} style={styles.avatar} />
@@ -279,7 +272,7 @@ export function RecipeListScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.feedSubtitle}>신선한 봄동으로 만드는 다채로운 식탁 🌱</Text>
-        
+
         {/* 2열 Masonry Grid 레이아웃 */}
         <View style={styles.gridContainer}>
           <View style={styles.column}>
