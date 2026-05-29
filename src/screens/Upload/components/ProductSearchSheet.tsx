@@ -92,6 +92,8 @@ export const ProductSearchSheet = forwardRef<
       snapPoints={snapPoints}
       index={0}
       enablePanDownToClose
+      stackBehavior="push"
+      enableDynamicSizing={false}
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.background}
       handleIndicatorStyle={styles.handle}

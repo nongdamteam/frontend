@@ -67,6 +67,8 @@ export const UploadModal = forwardRef<UploadModalRef>((_props, ref) => {
       snapPoints={snapPoints}
       index={0}
       enablePanDownToClose
+      stackBehavior="push"
+      enableDynamicSizing={false}
       onDismiss={handleDismiss}
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.background}
