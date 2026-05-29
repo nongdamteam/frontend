@@ -17,6 +17,7 @@ import { cartImages } from '../data/cartImages';
 import OrderCard, { OrderGroup } from '../components/orderHistory/OrderCard';
 import FilterBottomSheet from '../components/orderHistory/FilterBottomSheet';
 import BackButton from '../components/common/BackButton';
+import { cartService } from '@/services/cartService';
 
 const mockOrders: OrderGroup[] = [
   {
@@ -140,6 +141,15 @@ const ChevronDownIcon = () => (
 type FilterType = 'all' | '1month' | '3months' | '6months' | 'custom';
 
 export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
+  const [orders, setOrders] = React.useState<OrderGroup[]>(cartService.getOrders());
+
+  React.useEffect(() => {
+    const unsubscribe = cartService.subscribe(() => {
+      setOrders(cartService.getOrders());
+    });
+    return unsubscribe;
+  }, []);
+
   // 실제 적용 필터 상태
   const [activeFilter, setActiveFilter] = React.useState<FilterType>('all');
   const [startY, setStartY] = React.useState(2026);
@@ -194,7 +204,7 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
   const filteredOrders = React.useMemo(() => {
     const now = new Date(2026, 4, 29);
 
-    return mockOrders.filter(order => {
+    return orders.filter(order => {
       const parts = order.orderDate.split('.');
       const orderDateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
       const diffTime = Math.abs(now.getTime() - orderDateObj.getTime());
@@ -213,7 +223,7 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
       }
       return true;
     });
-  }, [activeFilter, startY, startM, startD, endY, endM, endD]);
+  }, [orders, activeFilter, startY, startM, startD, endY, endM, endD]);
 
   const handleToggleDatePicker = (type: 'start' | 'end') => {
     if (tempDatePicker === type) {

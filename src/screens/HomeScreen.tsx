@@ -1,21 +1,32 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {
   Image,
   ImageBackground,
   ImageSourcePropType,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useNavigation} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import {runOnJS} from 'react-native-reanimated';
 
-import FilterButton from '../components/FilterButton';
-import ProductCard, {Product} from '../components/ProductCard';
-import ProductDetailScreen from './ProductDetailScreen';
 import {homeImages} from '../data/homeImages';
 import {colors, radius, shadow, spacing, typography} from '../styles/theme';
+
+import ProductListScreen from '@/screens/ProductList/ProductListScreen';
+import ProductDetailScreen from '@/screens/ProductDetail';
+import RecipeListScreen from '@/screens/RecipeList/RecipeListScreen';
+import {IProduct, SortOption} from '@/screens/ProductList/types';
+import {MOCK_PRODUCTS} from '@/screens/ProductList/hooks/useProducts';
+import { navigationService } from '@/services/navigationService';
+import { MOCK_RECIPES } from './RecipeList/RecipeListScreen';
+import RecipeDetailScreen from '@/screens/RecipeDetail/RecipeDetailScreen';
 
 type ScreenMode = 'main' | 'products';
 
@@ -32,7 +43,7 @@ type GroupBuyItem = {
   time: string;
 };
 
-const products: Product[] = [
+const products = [
   {
     id: 'cheorwon-cold',
     title: '철원 최고의 냉이 농장에서 자란 봄동',
@@ -67,28 +78,7 @@ const products: Product[] = [
   },
 ];
 
-const recipes: Recipe[] = [
-  {
-    id: 'shrimp-pancake',
-    title: '냉이새우부침',
-    image: homeImages.recipes.shrimpPancake,
-  },
-  {
-    id: 'pork-wrap',
-    title: '냉이새우보쌈',
-    image: homeImages.recipes.porkWrap,
-  },
-  {
-    id: 'bibimbap1',
-    title: '봄동비빔밥',
-    image: homeImages.recipes.bibimbapOne,
-  },
-  {
-    id: 'bibimbap2',
-    title: '봄동비빔밥',
-    image: homeImages.recipes.bibimbapTwo,
-  },
-];
+
 
 const groupBuys: GroupBuyItem[] = [
   {
@@ -121,182 +111,258 @@ function imageSource(image: ImageSourcePropType | string) {
   return typeof image === 'string' ? {uri: image} : image;
 }
 
-function HomeScreen() {
-  const [screenMode, setScreenMode] = useState<ScreenMode>('main');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+export type HomeStackParamList = {
+  HomeMain: undefined;
+  ProductList: { isGroupPurchaseOnly?: boolean; searchQuery?: string; initialSortOption?: SortOption; isPopularRanking?: boolean } | undefined;
+  Details: { product: IProduct; entryPoint?: 'home' | 'list' };
+  RecipeList: undefined;
+  RecipeDetail: { recipeId: string };
+};
 
-  if (selectedProduct) {
-    return (
-      <ProductDetailScreen
-        onBack={() => setSelectedProduct(null)}
-        product={selectedProduct}
-      />
-    );
-  }
+const Stack = createNativeStackNavigator<HomeStackParamList>();
 
-  if (screenMode === 'products') {
-    return (
-      <ProductListScreen
-        onBack={() => setScreenMode('main')}
-        onSelectProduct={setSelectedProduct}
-      />
-    );
-  }
+const getMockProductById = (id: string): IProduct => {
+  const idMap: Record<string, string> = {
+    'cheorwon-cold': '1',
+    'smart-farm': '2',
+    'seosan': '3',
+    'hongseong': '4',
+    'cheorwon': '1',
+    'haenam': '5',
+    'seosan-cold': '3',
+    'yeosu': '6',
+  };
 
-  return <MainHomeScreen onOpenProducts={() => setScreenMode('products')} />;
+  const targetId = idMap[id] || '1';
+  const found = MOCK_PRODUCTS.find((p) => p.id === targetId);
+  return found || MOCK_PRODUCTS[0];
+};
+
+interface HomeScreenProps {
+  onSwipeProgress?: (translationX: number) => void;
+  onSwipeEnd?: (translationX: number, velocityX: number) => void;
 }
 
-function MainHomeScreen({onOpenProducts}: {onOpenProducts: () => void}) {
+function HomeScreen({ onSwipeProgress, onSwipeEnd }: HomeScreenProps) {
   return (
-    <SafeAreaView edges={['top']} style={styles.safeArea}>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}>
-        <Text style={styles.mainLogo}>농담 🌱</Text>
-
-        <Pressable
-          onPress={onOpenProducts}
-          style={({pressed}) => [styles.heroWrapper, pressed && styles.pressed]}>
-          <ImageBackground
-            imageStyle={styles.heroImageStyle}
-            resizeMode="cover"
-            source={imageSource(homeImages.hero)}
-            style={styles.hero}>
-            <View style={styles.heroOverlay}>
-              <View style={styles.heroTopRow}>
-                <Text style={styles.heroEyebrow}>오늘 마감 공구</Text>
-              </View>
-              <View style={styles.heroSpacer} />
-              <Text style={styles.heroText}>강호동이 먹었던 그 봄동!</Text>
-              <Text style={styles.heroSubText}>공구 진행중</Text>
-              <View style={styles.heroDots}>
-                <View style={[styles.heroDot, styles.activeHeroDot]} />
-                <View style={styles.heroDot} />
-                <View style={styles.heroDot} />
-                <View style={styles.heroDot} />
-              </View>
-            </View>
-          </ImageBackground>
-        </Pressable>
-
-        <HomeSection onViewAll={onOpenProducts} title="이런 레시피 어때요?">
-          <View style={styles.tileGrid}>
-            {recipes.map(recipe => (
-              <Pressable
-                key={recipe.id}
-                onPress={onOpenProducts}
-                style={({pressed}) => [
-                  styles.tileItem,
-                  pressed && styles.pressed,
-                ]}>
-                <View style={styles.tileImageWrapper}>
-                  <Image
-                    resizeMode="cover"
-                    source={imageSource(recipe.image)}
-                    style={styles.tileImage}
-                  />
-                </View>
-                <Text numberOfLines={1} style={styles.tileTitle}>
-                  {recipe.title}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </HomeSection>
-
-        <HomeSection onViewAll={onOpenProducts} title="오늘의 공구">
-          <View style={styles.tileGrid}>
-            {groupBuys.map(item => (
-              <Pressable
-                key={item.id}
-                onPress={onOpenProducts}
-                style={({pressed}) => [
-                  styles.tileItem,
-                  pressed && styles.pressed,
-                ]}>
-                <View style={styles.tileImageWrapper}>
-                  <Image
-                    resizeMode="cover"
-                    source={imageSource(item.image)}
-                    style={styles.tileImage}
-                  />
-                  <View style={styles.timeBadgeWrapper}>
-                    <Text style={styles.timeBadge}>{item.time}</Text>
-                  </View>
-                </View>
-                <Text numberOfLines={1} style={styles.tileTitle}>
-                  {item.title}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </HomeSection>
-
-        <HomeSection onViewAll={onOpenProducts} title="사람들이 많이 찾는 상품">
-          <View style={styles.rankGrid}>
-            {products.slice(0, 3).map((product, index) => (
-              <Pressable
-                key={product.id}
-                onPress={onOpenProducts}
-                style={({pressed}) => [
-                  styles.rankItem,
-                  pressed && styles.pressed,
-                ]}>
-                <View style={styles.rankImageWrapper}>
-                  <Image
-                    resizeMode="cover"
-                    source={imageSource(homeImages.ranks[index])}
-                    style={styles.rankImage}
-                  />
-                  <View style={styles.rankBadgeWrapper}>
-                    <Text style={styles.rankBadge}>{index + 1}</Text>
-                  </View>
-                </View>
-                <Text numberOfLines={2} style={styles.rankTitle}>
-                  {product.title}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </HomeSection>
-      </ScrollView>
-    </SafeAreaView>
+    <Stack.Navigator
+      initialRouteName="HomeMain"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="HomeMain">
+        {props => (
+          <MainHomeScreen
+            {...props}
+            onSwipeProgress={onSwipeProgress}
+            onSwipeEnd={onSwipeEnd}
+          />
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="ProductList" component={ProductListScreen} />
+      <Stack.Screen name="Details" component={ProductDetailScreen} />
+      <Stack.Screen name="RecipeList" component={RecipeListScreen} />
+      <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} />
+    </Stack.Navigator>
   );
 }
 
-function ProductListScreen({
-  onBack,
-  onSelectProduct,
-}: {
-  onBack: () => void;
-  onSelectProduct: (product: Product) => void;
-}) {
+interface MainHomeScreenProps {
+  onSwipeProgress?: (translationX: number) => void;
+  onSwipeEnd?: (translationX: number, velocityX: number) => void;
+}
+
+function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+  const scrollViewRef = React.useRef<ScrollView>(null);
+
+  React.useEffect(() => {
+    navigationService.registerScrollToTop('home', () => {
+      if (navigation.canGoBack()) {
+        navigation.popToTop();
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+        }, 100);
+      } else {
+        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      }
+    });
+    return () => {
+      navigationService.unregisterScrollToTop('home');
+    };
+  }, [navigation]);
+
+  const swipeGesture = Gesture.Pan()
+    .activeOffsetX([20, 99999])
+    .failOffsetY([-8, 8])
+    .onUpdate(event => {
+      'worklet';
+      if (onSwipeProgress) {
+        runOnJS(onSwipeProgress)(event.translationX);
+      }
+    })
+    .onFinalize(event => {
+      'worklet';
+      if (onSwipeEnd) {
+        runOnJS(onSwipeEnd)(event.translationX, event.velocityX);
+      }
+    });
+
+  const handleProductPress = (productId: string) => {
+    const product = getMockProductById(productId);
+    navigation.navigate('Details', { product, entryPoint: 'home' });
+  };
+
+  const handleOpenProducts = () => {
+    navigation.navigate('ProductList');
+  };
+
+  const handleOpenRecipes = () => {
+    navigation.navigate('RecipeList');
+  };
+
+  const handleOpenPopularProducts = () => {
+    navigation.navigate('ProductList', { initialSortOption: 'participants', isPopularRanking: true });
+  };
+
+  const handleOpenGroupPurchase = () => {
+    navigation.navigate('ProductList', { isGroupPurchaseOnly: true });
+  };
+
+  const handleGroupItemPress = (title: string) => {
+    let query = '';
+    if (title.includes('냉이')) {
+      query = '냉이';
+    } else if (title.includes('봄동')) {
+      query = '봄동';
+    } else if (title.includes('방풍나물')) {
+      query = '방풍나물';
+    } else {
+      query = title;
+    }
+    navigation.navigate('ProductList', { isGroupPurchaseOnly: true, searchQuery: query });
+  };
+
   return (
-    <SafeAreaView edges={['top']} style={styles.safeArea}>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}>
-        <Pressable onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backText}>‹ 메인</Text>
-        </Pressable>
-        <View style={styles.header}>
-          <Text style={styles.brand}>농담 🌱</Text>
-          <FilterButton />
-        </View>
-        <View style={styles.listMeta}>
-          <Text style={styles.listCount}>총 {products.length}개 상품</Text>
-        </View>
-        <View style={styles.list}>
-          {products.map(product => (
-            <ProductCard
-              key={product.id}
-              onPress={() => onSelectProduct(product)}
-              product={product}
-            />
-          ))}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <GestureDetector gesture={swipeGesture}>
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}>
+          <Text style={styles.mainLogo}>농담 🌱</Text>
+
+          <Pressable
+            onPress={handleOpenProducts}
+            style={({pressed}) => [styles.heroWrapper, pressed && styles.pressed]}>
+            <ImageBackground
+              imageStyle={styles.heroImageStyle}
+              resizeMode="cover"
+              source={imageSource(homeImages.hero)}
+              style={styles.hero}>
+              <View style={styles.heroOverlay}>
+                <View style={styles.heroTopRow}>
+                  <Text style={styles.heroEyebrow}>오늘 마감 공구</Text>
+                </View>
+                <View style={styles.heroSpacer} />
+                <Text style={styles.heroText}>강호동이 먹었던 그 봄동!</Text>
+                <Text style={styles.heroSubText}>공구 진행중</Text>
+                <View style={styles.heroDots}>
+                  <View style={[styles.heroDot, styles.activeHeroDot]} />
+                  <View style={styles.heroDot} />
+                  <View style={styles.heroDot} />
+                  <View style={styles.heroDot} />
+                </View>
+              </View>
+            </ImageBackground>
+          </Pressable>
+
+          <HomeSection onViewAll={handleOpenRecipes} title="이런 레시피 어때요?">
+            <View style={styles.tileGrid}>
+              {MOCK_RECIPES.slice(0, 4).map(recipe => (
+                <Pressable
+                  key={recipe.id}
+                  onPress={() => {
+                    navigation.navigate('RecipeDetail', { recipeId: recipe.id });
+                  }}
+                  style={({pressed}) => [
+                    styles.tileItem,
+                    pressed && styles.pressed,
+                  ]}>
+                  <View style={styles.tileImageWrapper}>
+                    <Image
+                      resizeMode="cover"
+                      source={imageSource(recipe.image)}
+                      style={styles.tileImage}
+                    />
+                  </View>
+                  <Text numberOfLines={1} style={styles.tileTitle}>
+                    {recipe.title}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </HomeSection>
+
+          <HomeSection onViewAll={handleOpenGroupPurchase} title="오늘의 공구">
+            <View style={styles.tileGridThree}>
+              {groupBuys.slice(0, 3).map(item => (
+                <Pressable
+                  key={item.id}
+                  onPress={() => handleGroupItemPress(item.title)}
+                  style={({pressed}) => [
+                    styles.tileItemThree,
+                    pressed && styles.pressed,
+                  ]}>
+                  <View style={styles.tileImageWrapperLarge}>
+                    <Image
+                      resizeMode="cover"
+                      source={imageSource(item.image)}
+                      style={styles.tileImage}
+                    />
+                    <View style={styles.timeBadgeWrapper}>
+                      <Text style={styles.timeBadge}>{item.time}</Text>
+                    </View>
+                  </View>
+                  <Text numberOfLines={1} style={styles.tileTitle}>
+                    {item.title}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </HomeSection>
+
+          <HomeSection onViewAll={handleOpenPopularProducts} title="사람들이 많이 찾는 상품">
+            <View style={styles.rankGrid}>
+              {products.slice(0, 3).map((product, index) => (
+                <Pressable
+                  key={product.id}
+                  onPress={() => handleProductPress(product.id)}
+                  style={({pressed}) => [
+                    styles.rankItem,
+                    pressed && styles.pressed,
+                  ]}>
+                  <View style={styles.rankImageWrapper}>
+                    <Image
+                      resizeMode="cover"
+                      source={imageSource(homeImages.ranks[index])}
+                      style={styles.rankImage}
+                    />
+                    <View style={styles.rankBadgeWrapper}>
+                      <Text style={styles.rankBadge}>{index + 1}</Text>
+                    </View>
+                  </View>
+                  <Text numberOfLines={2} style={styles.rankTitle}>
+                    {product.title}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </HomeSection>
+        </ScrollView>
+      </SafeAreaView>
+    </GestureDetector>
   );
 }
 
@@ -436,6 +502,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
   },
+  // Three-up larger tiles for group buys
+  tileGridThree: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  tileItemThree: {
+    flex: 1,
+    minWidth: 0,
+  },
+  tileImageWrapperLarge: {
+    aspectRatio: 0.92,
+    borderRadius: 14,
+    marginBottom: spacing.sm,
+    overflow: 'hidden',
+  },
   tileItem: {
     flex: 1,
     minWidth: 0,
@@ -459,7 +540,7 @@ const styles = StyleSheet.create({
 
   // Timer badge (group buy overlay)
   timeBadgeWrapper: {
-    left: spacing.sm,
+    right: spacing.sm,
     position: 'absolute',
     top: spacing.sm,
   },

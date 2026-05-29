@@ -2,11 +2,11 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 
 type SheetView =
   | { name: 'list' }
-  | { name: 'detail'; productId: string };
+  | { name: 'detail'; productId: string; product?: any };
 
 interface ProductSheetContextValue {
   view: SheetView;
-  pushDetail: (productId: string) => void;
+  pushDetail: (productId: string, product?: any) => void;
   popToList: () => void;
   reset: () => void;
 }
@@ -20,8 +20,8 @@ interface ProviderProps {
 export function ProductSheetProvider({ children }: ProviderProps) {
   const [view, setView] = useState<SheetView>({ name: 'list' });
 
-  const pushDetail = useCallback((productId: string) => {
-    setView({ name: 'detail', productId });
+  const pushDetail = useCallback((productId: string, product?: any) => {
+    setView({ name: 'detail', productId, product });
   }, []);
 
   const popToList = useCallback(() => {
