@@ -6,6 +6,7 @@ import BottomNavigationBar, {
   TabType,
 } from './src/components/common/BottomNavigationBar';
 import HomeScreen from './src/screens/HomeScreen';
+import CartScreen from './src/screens/CartScreen';
 import {COLORS} from './src/theme/colors';
 
 function App() {
@@ -36,6 +37,9 @@ function AppContent() {
 function renderTabContent(activeTab: TabType) {
   if (activeTab === 'home') {
     return <HomeScreen />;
+  }
+  if (activeTab === 'cart') {
+    return <CartScreen />;
   }
 
   return (
