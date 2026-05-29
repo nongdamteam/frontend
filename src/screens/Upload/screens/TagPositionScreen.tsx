@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+// (영상 분기에서 자동 복귀를 위해 useEffect 사용)
 import { Typography } from '@/components/common/Typography';
 import { COLORS } from '@/constants/colors.local';
 import { SPACING } from '@/constants/layout';
@@ -13,7 +14,7 @@ interface TagPositionScreenProps {
 }
 
 export function TagPositionScreen(_: TagPositionScreenProps) {
-  const { draft, updateTagPosition, removeTag, goTo, hasPendingTags } =
+  const { draft, updateTagPosition, removeTag, goTo, hasPendingTags, isVideo } =
     useUploadDraft();
 
   // 진입 시 위치 미지정 태그가 있으면 그걸 첫 활성으로 잡음
@@ -32,11 +33,29 @@ export function TagPositionScreen(_: TagPositionScreenProps) {
     }
   }, [draft.tags, activeTagId]);
 
+  // 영상이면 진입 즉시 detail로 복귀
+  useEffect(() => {
+    if (isVideo) goTo('detail');
+  }, [isVideo, goTo]);
+
   if (!draft.media) {
     return (
       <View style={styles.empty}>
         <Typography variant="body" color="textMuted">
           미디어가 선택되지 않았어요.
+        </Typography>
+      </View>
+    );
+  }
+
+  // 영상은 위치 지정 단계 자체를 건너뜀 — 정상 흐름에선 도달하지 않지만
+  // 만약 의도치 않게 들어왔다면 자동으로 detail로 복귀시킴.
+  if (isVideo) {
+    return (
+      <View style={styles.empty}>
+        <Typography variant="body" color="textMuted" align="center">
+          영상에는 위치 지정이 없어요.{'\n'}
+          정보 입력 화면으로 돌아갑니다.
         </Typography>
       </View>
     );

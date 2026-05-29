@@ -33,6 +33,7 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
     goTo,
     canSubmit,
     hasPendingTags,
+    isVideo,
   } = useUploadDraft();
   const searchSheetRef = useRef<ProductSearchSheetRef>(null);
   const { mutate: upload, isPending, isSuccess, isError, error } =
@@ -72,11 +73,12 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
 
   const handleTagPress = () => {
     if (draft.tags.length === 0) return;
+    if (isVideo) return; // 영상은 위치 지정 단계 없음
     goTo('position');
   };
 
   const handleSubmit = () => {
-    if (hasPendingTags) {
+    if (!isVideo && hasPendingTags) {
       Alert.alert('태그 위치를 지정해주세요', '모든 태그에 위치가 필요해요.');
       return;
     }
@@ -128,10 +130,23 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
 
         <TagTray
           tags={draft.tags}
+          treatAllAsPlaced={isVideo}
           onAddPress={handleAddTag}
           onTagPress={handleTagPress}
           onTagRemove={removeTag}
         />
+
+        {isVideo && draft.tags.length > 0 ? (
+          <Typography
+            variant="caption"
+            color="textMuted"
+            align="center"
+            style={styles.videoNotice}
+          >
+            영상은 위치 지정 없이, 시청자가 영상을 일시정지하면 하단에 자동
+            노출돼요.
+          </Typography>
+        ) : null}
 
         <PrivacySettings value={draft.privacy} onChange={setPrivacy} />
 
@@ -179,4 +194,5 @@ const styles = StyleSheet.create({
   thumbPlaceholder: {},
   captionWrap: { flex: 1 },
   footer: { paddingHorizontal: SPACING.lg, marginTop: SPACING.md },
+  videoNotice: { paddingHorizontal: SPACING.lg, marginTop: -SPACING.sm },
 });

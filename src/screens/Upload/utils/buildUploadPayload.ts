@@ -10,19 +10,24 @@ export function buildUploadPayload(draft: UploadDraft): UploadPayload {
     throw new Error('미디어가 선택되지 않았습니다.');
   }
 
-  const placedTags = draft.tags.filter(t => t.position != null);
+  const isVideo = draft.media.type === 'video';
+  // 영상: 모든 태그 포함 (좌표 없음)
+  // 이미지: 위치 지정된 태그만 포함
+  const validTags = isVideo
+    ? draft.tags
+    : draft.tags.filter(t => t.position != null);
 
   return {
     mediaType: draft.media.type,
     mediaUri: draft.media.uri,
     caption: draft.caption.trim(),
-    tags: placedTags.map(t => ({
+    tags: validTags.map(t => ({
       keyword: t.keyword,
       label: t.label,
       averagePrice: t.averagePrice,
       thumbnailUrl: t.thumbnailUrl,
-      x: t.position!.x,
-      y: t.position!.y,
+      x: t.position?.x ?? 0,
+      y: t.position?.y ?? 0,
     })),
     privacy: draft.privacy,
   };

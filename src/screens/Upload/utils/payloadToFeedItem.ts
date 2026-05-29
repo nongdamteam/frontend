@@ -12,14 +12,17 @@ export function payloadToFeedItem(
   contentId: string,
   authorName = '나',
 ): FeedItem {
+  const isVideo = payload.mediaType === 'video';
+
   const tags: FeedTag[] = payload.tags.map((t, idx) => ({
     id: `${contentId}_tag_${idx}`,
     keyword: t.keyword,
     label: t.label,
     averagePrice: t.averagePrice,
     thumbnailUrl: t.thumbnailUrl,
-    x: t.x,
-    y: t.y,
+    // 이미지만 좌표 사용. 영상은 좌표 없이 하단 strip으로 노출됨.
+    x: isVideo ? undefined : t.x,
+    y: isVideo ? undefined : t.y,
   }));
 
   return {

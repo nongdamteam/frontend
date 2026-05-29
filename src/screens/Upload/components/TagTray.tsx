@@ -7,6 +7,8 @@ import { RADIUS, SPACING } from '@/constants/layout';
 
 interface TagTrayProps {
   tags: PendingTag[];
+  /** 영상이면 모든 태그를 placed처럼 표시(위치 지정 X) */
+  treatAllAsPlaced?: boolean;
   onAddPress: () => void;
   onTagPress?: (tag: PendingTag) => void;
   onTagRemove?: (id: string) => void;
@@ -20,6 +22,7 @@ interface TagTrayProps {
  */
 export function TagTray({
   tags,
+  treatAllAsPlaced = false,
   onAddPress,
   onTagPress,
   onTagRemove,
@@ -42,7 +45,7 @@ export function TagTray({
       {tags.length > 0 ? (
         <View style={styles.chipList}>
           {tags.map(tag => {
-            const isPlaced = tag.position != null;
+            const isPlaced = treatAllAsPlaced || tag.position != null;
             return (
               <View
                 key={tag.id}

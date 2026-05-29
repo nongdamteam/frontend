@@ -11,16 +11,22 @@ export function useUploadDraft() {
 
   const derived = useMemo(() => {
     const hasMedia = ctx.draft.media != null;
+    const isVideo = ctx.draft.media?.type === 'video';
     const pendingTags = ctx.draft.tags.filter(t => t.position == null);
     const placedTags = ctx.draft.tags.filter(t => t.position != null);
 
+    // 영상: 위치 지정 불필요 → pending 여부 무시
+    // 이미지: 모든 태그가 위치 지정되어야 submit 가능
+    const tagsReady = isVideo ? true : pendingTags.length === 0;
+
     return {
       hasMedia,
+      isVideo,
       pendingTags,
       placedTags,
       hasPendingTags: pendingTags.length > 0,
       canProceedToDetail: hasMedia,
-      canSubmit: hasMedia && pendingTags.length === 0,
+      canSubmit: hasMedia && tagsReady,
     };
   }, [ctx.draft.media, ctx.draft.tags]);
 
