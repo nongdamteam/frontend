@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -22,16 +22,6 @@ export function MediaSelectScreen({ onClose }: MediaSelectScreenProps) {
   const { draft, setMedia, goTo, canProceedToDetail } = useUploadDraft();
   const { pickFromLibrary, captureFromCamera } = useMediaLibrary();
   const [source, setSource] = useState<MediaSource>('gallery');
-
-  // 진입 시 자동으로 갤러리 호출 (가장 흔한 시나리오)
-  useEffect(() => {
-    if (draft.media) return;
-    pickFromLibrary({ mediaType: 'mixed' }).then(m => {
-      if (m) setMedia(m);
-    });
-    // 최초 1회만 자동 실행
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleSourceChange = useCallback(
     async (next: MediaSource) => {

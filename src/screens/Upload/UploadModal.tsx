@@ -31,7 +31,13 @@ export interface UploadModalRef {
  * 외부에서 ref.open() 호출 시 시트 표시.
  * 내부 step(media/detail/position) 전환은 UploadContext가 담당.
  */
-export const UploadModal = forwardRef<UploadModalRef>((_props, ref) => {
+interface UploadModalProps {
+  /** 시트가 닫혔을 때 부모에게 통보 (스와이프 비활성화 등 외부 상태 동기화용) */
+  onClose?: () => void;
+}
+
+export const UploadModal = forwardRef<UploadModalRef, UploadModalProps>(
+  ({ onClose }, ref) => {
   const modalRef = useRef<BottomSheetModal>(null);
   const [resetKey, setResetKey] = useState(0);
 
@@ -47,7 +53,8 @@ export const UploadModal = forwardRef<UploadModalRef>((_props, ref) => {
   const handleDismiss = useCallback(() => {
     // 시트 닫힐 때마다 Provider 재마운트 → 다음 오픈은 깨끗한 상태
     setResetKey(k => k + 1);
-  }, []);
+    onClose?.();
+  }, [onClose]);
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -81,7 +88,8 @@ export const UploadModal = forwardRef<UploadModalRef>((_props, ref) => {
       </BottomSheetView>
     </BottomSheetModal>
   );
-});
+  },
+);
 
 UploadModal.displayName = 'UploadModal';
 

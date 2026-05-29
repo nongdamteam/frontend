@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   ListRenderItem,
@@ -44,9 +44,16 @@ export function BabsScreen({
   const sheetRef = useRef<ProductSheetRef>(null);
   const uploadModalRef = useRef<UploadModalRef>(null);
   const flatListRef = useRef<FlatList>(null);
+  // 업로드 모달이 열려있는 동안에는 가로 스와이프 비활성화 (시트 제스처와 충돌 방지)
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const handleUploadPress = useCallback(() => {
+    setUploadOpen(true);
     uploadModalRef.current?.open();
+  }, []);
+
+  const handleUploadModalClose = useCallback(() => {
+    setUploadOpen(false);
   }, []);
 
   // 다른 탭에서 특정 피드로 점프 (navigationService 통해 외부 트리거)
@@ -79,6 +86,42 @@ export function BabsScreen({
     [activeIndex, handleTagPress],
   );
 
+  // 가로 스와이프 제스처: 좌우 충분히 그었을 때만 인식.
+  // - 매 렌더마다 객체가 재생성되면 GestureDetector가 불안정해지므로 useMemo.
+  // - 업로드 모달이 열려있으면 enabled=false 로 비활성화.
+  // - 훅 순서 안정성을 위해 early return 위에 위치.
+  const swipeGesture = useMemo(() => {
+    return Gesture.Pan()
+      .enabled(!uploadOpen)
+      .activeOffsetX([-20, 20])
+      .failOffsetY([-8, 8])
+      .onUpdate(event => {
+        'worklet';
+        if (onSwipeProgress) {
+          runOnJS(onSwipeProgress)(event.translationX);
+        }
+      })
+      .onEnd(event => {
+        'worklet';
+        if (onSwipeEnd) return; // 부모가 onSwipeEnd로 직접 처리
+
+        const SWIPE_THRESHOLD = 50;
+        if (event.translationX < -SWIPE_THRESHOLD && onSwipeLeft) {
+          runOnJS(onSwipeLeft)();
+        } else if (event.translationX > SWIPE_THRESHOLD && onSwipeRight) {
+          runOnJS(onSwipeRight)();
+        }
+      })
+      .onFinalize(event => {
+        'worklet';
+        // 트리비얼 이벤트(움직임 거의 없음)는 무시 — 모달 토글 시 잘못된 이벤트 방지
+        if (Math.abs(event.translationX) < 5) return;
+        if (onSwipeEnd) {
+          runOnJS(onSwipeEnd)(event.translationX, event.velocityX);
+        }
+      });
+  }, [uploadOpen, onSwipeLeft, onSwipeRight, onSwipeProgress, onSwipeEnd]);
+
   if (isLoading) {
     return (
       <View style={styles.center}>
@@ -97,37 +140,10 @@ export function BabsScreen({
     );
   }
 
-  // 가로 스와이프 제스처: 좌우 충분히 그었을 때만 인식
-  const swipeGesture = Gesture.Pan()
-    .activeOffsetX([-20, 20])
-    .failOffsetY([-8, 8])
-    .onUpdate(event => {
-      'worklet';
-      if (onSwipeProgress) {
-        runOnJS(onSwipeProgress)(event.translationX);
-      }
-    })
-    .onEnd(event => {
-      'worklet';
-      if (onSwipeEnd) return; // 부모가 onSwipeEnd로 직접 처리
-
-      const SWIPE_THRESHOLD = 50;
-      if (event.translationX < -SWIPE_THRESHOLD && onSwipeLeft) {
-        runOnJS(onSwipeLeft)();
-      } else if (event.translationX > SWIPE_THRESHOLD && onSwipeRight) {
-        runOnJS(onSwipeRight)();
-      }
-    })
-    .onFinalize(event => {
-      'worklet';
-      if (onSwipeEnd) {
-        runOnJS(onSwipeEnd)(event.translationX, event.velocityX);
-      }
-    });
-
   return (
-    <GestureDetector gesture={swipeGesture}>
-      <View style={styles.container}>
+    <View style={styles.container}>
+      {/* 피드만 GestureDetector 안에 둠 — 버튼/모달은 제스처 영향 밖 */}
+      <GestureDetector gesture={swipeGesture}>
         <FlatList
           ref={flatListRef}
           data={data}
@@ -149,27 +165,28 @@ export function BabsScreen({
             index,
           })}
         />
-        <ProductSheet ref={sheetRef} />
+      </GestureDetector>
 
-        {/* 우상단 플로팅 + 버튼 — 업로드 모달 진입 */}
-        <FloatingButton
-          iconName="add"
-          iconSize={28}
-          size={52}
-          background="surface"
-          iconColor="textPrimary"
-          onPress={handleUploadPress}
-          accessibilityLabel="콘텐츠 업로드"
-          style={{
-            position: 'absolute',
-            top: insets.top + SPACING.md,
-            right: SPACING.lg,
-          }}
-        />
+      <ProductSheet ref={sheetRef} />
 
-        <UploadModal ref={uploadModalRef} />
-      </View>
-    </GestureDetector>
+      {/* 우상단 플로팅 + 버튼 — 업로드 모달 진입 (GestureDetector 밖) */}
+      <FloatingButton
+        iconName="add"
+        iconSize={28}
+        size={52}
+        background="surface"
+        iconColor="textPrimary"
+        onPress={handleUploadPress}
+        accessibilityLabel="콘텐츠 업로드"
+        style={{
+          position: 'absolute',
+          top: insets.top + SPACING.md,
+          right: SPACING.lg,
+        }}
+      />
+
+      <UploadModal ref={uploadModalRef} onClose={handleUploadModalClose} />
+    </View>
   );
 }
 
