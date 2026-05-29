@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { quickLinks, sidebarItems, topNavigationItems } from '../productRegistrationConfig'
-import type { AppView } from '../appTypes'
-import nongdamLogo from '../assets/nongdam-logo.svg'
+import { quickLinks, sidebarItems, topNavigationItems } from '../../config/productRegistrationConfig'
+import type { AppView } from '../../app/appTypes'
+import nongdamLogo from '../../assets/nongdam-logo.svg'
 
 type SidebarItem = (typeof sidebarItems)[number]
 

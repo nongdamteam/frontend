@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
-import { PartnerShell } from '../components/PartnerShell'
-import type { AppView } from '../appTypes'
-import { getProductById } from '../data/commerceDummyData'
+import { PartnerShell } from '../../components/layout/PartnerShell'
+import type { AppView } from '../../app/appTypes'
+import { getProductById } from '../../services/mockDb/commerceDummyData'
 
 type ProductDetailPageProps = {
   productId: number

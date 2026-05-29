@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { ProductInquiryPage } from './ProductInquiryPage'
-import { ProductRegistrationPage } from './ProductRegistrationPage'
-import { ProductDetailPage } from './screens/ProductDetailPage'
-import { ProductEditPage } from './screens/ProductEditPage'
-import { StoreInfoPage } from './screens/StoreInfoPage'
-import { featuredProductId } from './data/commerceDummyData'
+import { ProductInquiryPage } from '../pages/product/ProductInquiryPage'
+import { ProductRegistrationPage } from '../pages/product/ProductRegistrationPage'
+import { ProductDetailPage } from '../pages/product/ProductDetailPage'
+import { ProductEditPage } from '../pages/product/ProductEditPage'
+import { StoreInfoPage } from '../pages/store/StoreInfoPage'
+import { featuredProductId } from '../services/mockDb/commerceDummyData'
 import type { AppView } from './appTypes'
-import './App.css'
+import '../styles/App.css'
 
 function App() {
   const [view, setView] = useState<AppView>('product-inquiry')

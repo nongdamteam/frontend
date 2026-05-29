@@ -2,7 +2,7 @@ import {
   groupBuyingCampaignStorageKey,
   type GroupBuyingCampaign,
   type GroupBuyingStatus,
-} from './productRegistrationConfig'
+} from '../../config/productRegistrationConfig'
 
 const groupBuyingStatuses: GroupBuyingStatus[] = [
   '모집중',

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import {
   categoryModes,
@@ -13,7 +13,7 @@ import {
   quickLinks,
   sidebarItems,
   topNavigationItems,
-} from './productRegistrationConfig'
+} from '../../config/productRegistrationConfig'
 import type {
   CategoryMode,
   CertificationMarkId,
@@ -24,15 +24,15 @@ import type {
   ProductStatus,
   SalesMethod,
   SectionId,
-} from './productRegistrationConfig'
-import nongdamLogo from './assets/nongdam-logo.svg'
+} from '../../config/productRegistrationConfig'
+import nongdamLogo from '../../assets/nongdam-logo.svg'
 import { ActiveGroupBuyingPage } from './ActiveGroupBuyingPage'
 import {
   prependStoredGroupBuyingCampaign,
   readStoredGroupBuyingCampaigns,
-} from './groupBuyingCampaignStorage'
-import type { AppView } from './appTypes'
-import { appendCommerceProduct } from './data/commerceDummyData'
+} from '../../services/storage/groupBuyingCampaignStorage'
+import type { AppView } from '../../app/appTypes'
+import { appendCommerceProduct } from '../../services/mockDb/commerceDummyData'
 
 type FeedbackTone = 'info' | 'success' | 'error'
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PartnerShell } from './components/PartnerShell'
-import type { AppView } from './appTypes'
-import { commerceProducts } from './data/commerceDummyData'
+import { PartnerShell } from '../../components/layout/PartnerShell'
+import type { AppView } from '../../app/appTypes'
+import { commerceProducts } from '../../services/mockDb/commerceDummyData'
 
 type ProductInquiryPageProps = {
   onNavigate?: (view: AppView) => void
