@@ -1,11 +1,12 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
-  ListRenderItem,
   StyleSheet,
   View,
+  ListRenderItem,
 } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
+import { navigationService } from '@/services/navigationService';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { FeedItem as FeedItemType, FeedTag } from '@/@types/feed';
@@ -22,14 +23,35 @@ interface BabsScreenProps {
   onSwipeLeft?: () => void;
   /** 우측 스와이프 시 호출 (이전 탭으로 이동) */
   onSwipeRight?: () => void;
+  /** 스와이프 진행 중일 때 부모에게 translationX 값을 전달 */
+  onSwipeProgress?: (translationX: number) => void;
+  /** 스와이프가 끝났을 때 부모에게 전달 */
+  onSwipeEnd?: (translationX: number, velocityX: number) => void;
 }
 
-export function BabsScreen({ onSwipeLeft, onSwipeRight }: BabsScreenProps) {
+export function BabsScreen({ onSwipeLeft, onSwipeRight, onSwipeProgress, onSwipeEnd }: BabsScreenProps) {
   const { data, isLoading, isError } = useBabsFeed();
   const { activeIndex, viewabilityConfigCallbackPairs } = useActiveVideoIndex(0);
   const sheetRef = useRef<ProductSheetRef>(null);
+  const flatListRef = useRef<FlatList>(null);
+
+  useEffect(() => {
+    navigationService.setBabsNavigationCallback((feedId) => {
+      const index = data?.findIndex(item => item.id === feedId);
+      if (index !== undefined && index !== -1 && flatListRef.current) {
+        // Wait a brief moment to ensure FlatList is laid out
+        setTimeout(() => {
+          flatListRef.current?.scrollToIndex({ index, animated: false });
+        }, 100);
+      }
+    });
+    return () => {
+      navigationService.setBabsNavigationCallback(null);
+    };
+  }, [data]);
 
   const handleTagPress = useCallback((tag: FeedTag) => {
+    console.log('[BabsScreen] handleTagPress tag.keyword:', tag.keyword);
     sheetRef.current?.open(tag.keyword);
   }, []);
 
@@ -63,18 +85,32 @@ export function BabsScreen({ onSwipeLeft, onSwipeRight }: BabsScreenProps) {
   }
 
   // 가로 스와이프 제스처: 좌우 충분히 그었을 때만 인식
-  // activeOffsetX: 가로 20px 이상 움직이면 제스처 활성
+  // activeOffsetX: 가로 35px 이상 움직이면 제스처 활성
   // failOffsetY: 세로로 15px 넘게 움직이면 제스처 실패 (피드 스크롤이 우선)
   const swipeGesture = Gesture.Pan()
     .activeOffsetX([-20, 20])
-    .failOffsetY([-15, 15])
+    .failOffsetY([-8, 8])
+    .onUpdate(event => {
+      'worklet';
+      if (onSwipeProgress) {
+        runOnJS(onSwipeProgress)(event.translationX);
+      }
+    })
     .onEnd(event => {
       'worklet';
+      if (onSwipeEnd) return;
+
       const SWIPE_THRESHOLD = 50;
       if (event.translationX < -SWIPE_THRESHOLD && onSwipeLeft) {
         runOnJS(onSwipeLeft)();
       } else if (event.translationX > SWIPE_THRESHOLD && onSwipeRight) {
         runOnJS(onSwipeRight)();
+      }
+    })
+    .onFinalize(event => {
+      'worklet';
+      if (onSwipeEnd) {
+        runOnJS(onSwipeEnd)(event.translationX, event.velocityX);
       }
     });
 
@@ -82,6 +118,7 @@ export function BabsScreen({ onSwipeLeft, onSwipeRight }: BabsScreenProps) {
     <GestureDetector gesture={swipeGesture}>
       <View style={styles.container}>
       <FlatList
+        ref={flatListRef}
         data={data}
         keyExtractor={item => item.id}
         renderItem={renderItem}
