@@ -959,19 +959,7 @@
   gap: 6px;
 }
 
-.segmented-control label {
-  cursor: pointer;
-}
-
-.segmented-control input {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.segmented-control span {
+.segmented-control button {
   min-width: 96px;
   min-height: 34px;
   display: inline-flex;
@@ -983,9 +971,11 @@
   padding: 0 12px;
   font-size: 12px;
   font-weight: 800;
+  cursor: pointer;
 }
 
-.segmented-control input:checked + span {
+.segmented-control button:hover,
+.segmented-control button.is-active {
   border-color: var(--color-brand);
   background: var(--color-brand);
   color: var(--color-surface);
