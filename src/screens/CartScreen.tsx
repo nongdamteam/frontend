@@ -17,6 +17,7 @@ import { COLORS } from '../theme/colors';
 import { cartImages } from '../data/cartImages';
 import { FarmGroupCard } from '../components/cart/FarmGroupCard';
 import OrderHistoryScreen from './OrderHistoryScreen';
+import BackButton from '../components/common/BackButton';
 
 interface CartItem {
   id: string;
@@ -134,12 +135,6 @@ export default function CartScreen() {
   const [items, setItems] = useState<CartItem[]>(initialItems);
   const [farms, setFarms] = useState<Farm[]>(initialFarms);
   const [showOrderHistory, setShowOrderHistory] = useState(false);
-
-  const BackIcon = () => (
-    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <Path d="M15 19L8 12L15 5" stroke={colors.mutedText} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
 
   const LocationIcon = () => (
     <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -336,9 +331,7 @@ export default function CartScreen() {
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <BackIcon />
-        </TouchableOpacity>
+        <View style={styles.headerSide} />
         <Text style={styles.headerTitle}>장바구니</Text>
         <TouchableOpacity style={styles.orderHistoryButton} onPress={() => setShowOrderHistory(true)}>
           <Text style={styles.orderHistoryText}>주문내역</Text>
@@ -415,10 +408,6 @@ export default function CartScreen() {
             <Text style={styles.summaryValue}>+{formatPrice(totalDeliveryFee)}</Text>
           </View>
 
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>품절/미선택 제외</Text>
-            <Text style={styles.summaryValue}>{totalExcludeCount}개</Text>
-          </View>
 
           <View style={styles.summaryDivider} />
 
@@ -444,7 +433,7 @@ export default function CartScreen() {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     flex: 1,
   },
   header: {
@@ -457,8 +446,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
   },
-  backButton: {
-    padding: spacing.xs,
+  headerSide: {
+    flex: 1,
   },
   headerTitle: {
     ...typography.title,
@@ -466,6 +455,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   orderHistoryButton: {
+    flex: 1,
+    alignItems: 'flex-end',
     paddingVertical: spacing.xs,
   },
   orderHistoryText: {
@@ -475,6 +466,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   scrollContent: {
     paddingBottom: 110,

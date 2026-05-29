@@ -16,6 +16,7 @@ import { COLORS } from '../theme/colors';
 import { cartImages } from '../data/cartImages';
 import OrderCard, { OrderGroup } from '../components/orderHistory/OrderCard';
 import FilterBottomSheet from '../components/orderHistory/FilterBottomSheet';
+import BackButton from '../components/common/BackButton';
 
 const mockOrders: OrderGroup[] = [
   {
@@ -123,11 +124,6 @@ const mockOrders: OrderGroup[] = [
   },
 ];
 
-const BackIcon = () => (
-  <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <Path d="M15 19L8 12L15 5" stroke={colors.mutedText} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-  </Svg>
-);
 
 const FilterIcon = () => (
   <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -326,9 +322,7 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <BackIcon />
-        </TouchableOpacity>
+        <BackButton onPress={onBack} />
         <Text style={styles.headerTitle}>주문내역</Text>
         <View style={styles.headerSpacer} />
       </View>
@@ -404,7 +398,7 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     flex: 1,
   },
   header: {
@@ -430,6 +424,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   scrollContent: {
     paddingTop: 10,
@@ -447,7 +442,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   filterInfoBar: {
-    backgroundColor: 'transparent',
+    backgroundColor: colors.background,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
