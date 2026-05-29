@@ -6,8 +6,12 @@ export type ProductDetailRouteProp = RouteProp<HomeStackParamList, 'Details'>;
 export type ProductDetailNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'Details'>;
 
 export interface ProductDetailProps {
-  route: ProductDetailRouteProp;
-  navigation: ProductDetailNavigationProp;
+  route?: ProductDetailRouteProp;
+  navigation?: ProductDetailNavigationProp;
+  product?: any;
+  entryPoint?: 'home' | 'list' | 'modal';
+  onBackPress?: () => void;
+  onCloseModal?: () => void;
 }
 
 export type DetailTab = 'description' | 'reviews' | 'inquiries';
