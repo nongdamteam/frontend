@@ -53,9 +53,8 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
   };
 
   const handleTagPress = () => {
-    // 위치 미지정 태그가 있으면 위치 지정 화면으로 이동
-    // TODO(7단계): TagPositionScreen
-    Alert.alert('알림', '다음 단계에서 태그 위치 지정 화면이 연결됩니다.');
+    if (draft.tags.length === 0) return;
+    goTo('position');
   };
 
   const handleSubmit = () => {

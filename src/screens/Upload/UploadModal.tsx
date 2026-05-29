@@ -19,6 +19,7 @@ import { RADIUS, SPACING } from '@/constants/layout';
 import { UploadProvider, useUploadContext } from './context/UploadContext';
 import { MediaSelectScreen } from './screens/MediaSelectScreen';
 import { DetailFormScreen } from './screens/DetailFormScreen';
+import { TagPositionScreen } from './screens/TagPositionScreen';
 
 export interface UploadModalRef {
   open: () => void;
@@ -96,17 +97,14 @@ function StepRouter({ onClose }: { onClose: () => void }) {
     return <DetailFormScreen onClose={onClose} />;
   }
 
-  // TODO(7단계): TagPositionScreen
+  if (step === 'position') {
+    return <TagPositionScreen onClose={onClose} />;
+  }
+
   return (
     <View style={styles.placeholder}>
-      <Typography variant="heading2" color="textPrimary">
-        업로드 플로우
-      </Typography>
-      <Typography variant="caption" color="textMuted">
-        현재 단계: {step}
-      </Typography>
-      <Typography variant="caption" color="textMuted">
-        (다음 단계들에서 실제 화면이 연결됩니다)
+      <Typography variant="body" color="textMuted">
+        알 수 없는 단계: {step}
       </Typography>
     </View>
   );
