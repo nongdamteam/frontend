@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { styles } from './styles';
 import { PaginationProps } from './types';
 
-export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+export function Pagination({ currentPage, totalPages, onPageChange, onPageChangeComplete }: PaginationProps) {
   // 1부터 totalPages까지의 숫자 배열 생성
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
@@ -15,7 +15,11 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       {/* 이전 페이지 버튼 */}
       <TouchableOpacity
         style={[styles.arrowButton, isFirstPage && styles.disabledArrowButton]}
-        onPress={() => !isFirstPage && onPageChange(currentPage - 1)}
+        onPress={() => {
+          if (isFirstPage) return;
+          onPageChange(currentPage - 1);
+          if (onPageChangeComplete) onPageChangeComplete(currentPage - 1);
+        }}
         disabled={isFirstPage}
         activeOpacity={0.7}
       >
@@ -29,7 +33,10 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
           <TouchableOpacity
             key={`page-${num}`}
             style={[styles.pageButton, isActive && styles.activePageButton]}
-            onPress={() => onPageChange(num)}
+            onPress={() => {
+              onPageChange(num);
+              if (onPageChangeComplete) onPageChangeComplete(num);
+            }}
             activeOpacity={0.7}
           >
             <Text style={[styles.pageText, isActive && styles.activePageText]}>
@@ -42,7 +49,11 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       {/* 다음 페이지 버튼 */}
       <TouchableOpacity
         style={[styles.arrowButton, isLastPage && styles.disabledArrowButton]}
-        onPress={() => !isLastPage && onPageChange(currentPage + 1)}
+        onPress={() => {
+          if (isLastPage) return;
+          onPageChange(currentPage + 1);
+          if (onPageChangeComplete) onPageChangeComplete(currentPage + 1);
+        }}
         disabled={isLastPage}
         activeOpacity={0.7}
       >

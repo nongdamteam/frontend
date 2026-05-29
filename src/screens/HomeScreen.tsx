@@ -265,16 +265,16 @@ function MainHomeScreen() {
         </HomeSection>
 
         <HomeSection onViewAll={handleOpenGroupPurchase} title="오늘의 공구">
-          <View style={styles.tileGrid}>
-            {groupBuys.map(item => (
+          <View style={styles.tileGridThree}>
+            {groupBuys.slice(0, 3).map(item => (
               <Pressable
                 key={item.id}
                 onPress={() => handleGroupItemPress(item.title)}
                 style={({pressed}) => [
-                  styles.tileItem,
+                  styles.tileItemThree,
                   pressed && styles.pressed,
                 ]}>
-                <View style={styles.tileImageWrapper}>
+                <View style={styles.tileImageWrapperLarge}>
                   <Image
                     resizeMode="cover"
                     source={imageSource(item.image)}
@@ -459,6 +459,21 @@ const styles = StyleSheet.create({
   tileGrid: {
     flexDirection: 'row',
     gap: spacing.md,
+  },
+  // Three-up larger tiles for group buys
+  tileGridThree: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  tileItemThree: {
+    flex: 1,
+    minWidth: 0,
+  },
+  tileImageWrapperLarge: {
+    aspectRatio: 0.92,
+    borderRadius: 14,
+    marginBottom: spacing.sm,
+    overflow: 'hidden',
   },
   tileItem: {
     flex: 1,

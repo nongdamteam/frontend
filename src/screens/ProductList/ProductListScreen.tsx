@@ -12,8 +12,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '@/screens/HomeScreen';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from './styles';
+import BackHeader from '@/components/common/BackHeader';
 import { COLORS } from '@/constants/colors';
-import { useProducts } from './hooks/useProducts';
+import { useProducts, ITEMS_PER_PAGE } from './hooks/useProducts';
 
 // 공통 컴포넌트 임포트
 import SearchBar from '@/components/common/SearchBar';
@@ -49,25 +50,28 @@ export function ProductListScreen() {
     totalPages,
     isLoading,
     handlePageChange,
-  } = useProducts(initialSearchQuery, initialGroupPurchaseOnly, initialSortOption);
+    totalItems,
+  } = useProducts(initialSearchQuery, initialGroupPurchaseOnly, initialSortOption, isPopularRanking ? 100 : undefined);
 
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<FlatList<any>>(null);
+
+  // Ensure list scrolls to top when page changes
+  const onPageChange = (page: number) => {
+    handlePageChange(page);
+    // after changing page, scroll list to top so user sees the first items
+    try {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+    } catch (e) {
+      // fallback: ignore if method not available
+    }
+  };
 
   return (
     <View style={styles.container}>
-      {/* 상단 검색 헤더 (뒤로가기 버튼 + 검색창) */}
-      <View style={[styles.searchHeader, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.backArrow}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.searchBarWrapper}>
-          <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
-        </View>
-      </View>
+      <BackHeader
+        center={<SearchBar value={searchQuery} onChangeText={setSearchQuery} />}
+        onBack={() => navigation.goBack()}
+      />
 
       {/* 상품 목록 리스트 */}
       <FlatList
@@ -78,7 +82,11 @@ export function ProductListScreen() {
           <ProductCard
             product={item}
             onPress={() => navigation.navigate('Details', { product: item, entryPoint: 'list' })}
-            rank={isPopularRanking && index < 10 ? index + 1 : undefined}
+            rank={
+              isPopularRanking
+                ? (currentPage - 1) * ITEMS_PER_PAGE + index + 1
+                : undefined
+            }
           />
         )}
         contentContainerStyle={styles.listContent}
@@ -97,7 +105,7 @@ export function ProductListScreen() {
             {/* 검색 결과 표시 */}
             {searchQuery.trim() !== '' && (
               <Text style={{ fontSize: 13, color: COLORS.textSecondary, marginVertical: 10 }}>
-                &apos;{searchQuery}&apos; 검색 결과 (총 {products.length}건)
+                &apos;{searchQuery}&apos; 검색 결과 (총 {totalItems}건)
               </Text>
             )}
           </View>
@@ -107,7 +115,7 @@ export function ProductListScreen() {
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={handlePageChange}
+              onPageChange={onPageChange}
             />
           ) : null
         }
