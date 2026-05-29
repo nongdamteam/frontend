@@ -52,13 +52,12 @@ export function PositionPickerCanvas({
 
   return (
     <View style={styles.container} onLayout={onLayout}>
-      <Pressable onPress={handleCanvasPress} style={StyleSheet.absoluteFill}>
-        <Image
-          source={{ uri: media.uri }}
-          style={StyleSheet.absoluteFillObject}
-          resizeMode="cover"
-        />
-      </Pressable>
+      <Image
+        source={{ uri: media.uri }}
+        style={styles.media}
+        resizeMode="cover"
+      />
+      <Pressable onPress={handleCanvasPress} style={StyleSheet.absoluteFill} />
 
       {/* 가이드 칩 */}
       <View style={styles.guide} pointerEvents="none">
@@ -92,6 +91,10 @@ const styles = StyleSheet.create({
     aspectRatio: 9 / 16,
     backgroundColor: COLORS.black,
     overflow: 'hidden',
+  },
+  media: {
+    width: '100%',
+    height: '100%',
   },
   guide: {
     position: 'absolute',
