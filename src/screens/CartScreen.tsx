@@ -7,18 +7,16 @@ import {
   Pressable,
   TouchableOpacity,
   Alert,
-  Image,
   ImageSourcePropType,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, Rect, Circle } from 'react-native-svg';
+import Svg, { Path, Rect } from 'react-native-svg';
 import { colors, radius, shadow, spacing, typography } from '../styles/theme';
 import { COLORS } from '../theme/colors';
-import { cartImages } from '../data/cartImages';
 import { FarmGroupCard } from '../components/cart/FarmGroupCard';
 import OrderHistoryScreen from './OrderHistoryScreen';
 import DeliveryAddressScreen, { DeliveryAddress } from './DeliveryAddressScreen';
-import BackButton from '../components/common/BackButton';
+import PaymentScreen from './PaymentScreen';
 import { cartService } from '@/services/cartService';
 
 interface CartItem {
@@ -70,9 +68,10 @@ const initialFarms: Farm[] = [
 
 export default function CartScreen() {
   const [items, setItems] = useState<CartItem[]>(cartService.getCartItems());
-  const [farms, setFarms] = useState<Farm[]>(initialFarms);
+  const [farms] = useState<Farm[]>(initialFarms);
   const [showOrderHistory, setShowOrderHistory] = useState(false);
   const [showAddressScreen, setShowAddressScreen] = useState(false);
+  const [showPaymentScreen, setShowPaymentScreen] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress>({
     id: 'addr-1',
     label: '집',
@@ -167,6 +166,10 @@ export default function CartScreen() {
   const totalDeliveryFee = useMemo(() => farmCalculations.reduce((sum, f) => sum + f.deliveryFee, 0), [farmCalculations]);
   const totalExcludeCount = useMemo(() => items.filter(item => item.isSoldOut || !item.checked).length, [items]);
   const grandTotal = useMemo(() => totalProductPrice + totalDeliveryFee, [totalProductPrice, totalDeliveryFee]);
+  const paymentItems = useMemo(
+    () => activeItems.filter(item => item.checked),
+    [activeItems],
+  );
 
   const handleToggleItem = (itemId: string) => {
     const updated = items.map(item => {
@@ -271,19 +274,13 @@ export default function CartScreen() {
       Alert.alert('알림', '결제할 상품을 선택해주세요.');
       return;
     }
-    Alert.alert(
-      '주문 완료',
-      `총 ${checkedItemsCount}개의 상품 ${grandTotal.toLocaleString()}원 결제가 완료되었습니다.`,
-      [
-        {
-          text: '확인',
-          onPress: () => {
-            cartService.checkoutCheckedItems();
-            setShowOrderHistory(true);
-          },
-        },
-      ]
-    );
+    setShowPaymentScreen(true);
+  };
+
+  const handlePaymentComplete = () => {
+    cartService.checkoutCheckedItems();
+    setShowPaymentScreen(false);
+    setShowOrderHistory(true);
   };
 
   const formatPrice = (price: number) => `${price.toLocaleString()}원`;
@@ -301,6 +298,22 @@ export default function CartScreen() {
           setDeliveryAddress(addr);
           setShowAddressScreen(false);
         }}
+      />
+    );
+  }
+
+  if (showPaymentScreen) {
+    return (
+      <PaymentScreen
+        deliveryAddress={deliveryAddress}
+        excludedItemCount={totalExcludeCount}
+        items={paymentItems}
+        onBack={() => setShowPaymentScreen(false)}
+        onPaymentComplete={handlePaymentComplete}
+        productTotal={totalProductPrice}
+        selectedItemCount={checkedItemsCount}
+        totalAmount={grandTotal}
+        totalDeliveryFee={totalDeliveryFee}
       />
     );
   }
