@@ -73,7 +73,12 @@ function AppContent() {
   const OTHER_SWIPE_VELOCITY_THRESHOLD = 750;
 
   const changeTab = React.useCallback((nextTab: TabType) => {
-    if (nextTab === activeTab || transition) return;
+    if (nextTab === activeTab || transition) {
+      if (nextTab === activeTab && !transition) {
+        navigationService.scrollToTop(nextTab);
+      }
+      return;
+    }
 
     if (nextTab === 'babs') {
       setTransition({ from: activeTab, to: nextTab, direction: -1 });

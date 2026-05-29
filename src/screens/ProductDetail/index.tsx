@@ -67,14 +67,6 @@ export function ProductDetailScreen({
       [
         {
           text: '확인',
-          onPress: () => {
-            if (onCloseModal) {
-              onCloseModal();
-            } else if (navigation) {
-              navigation.goBack();
-            }
-            navigationService.redirectTab('cart');
-          }
         }
       ]
     );
@@ -105,14 +97,6 @@ export function ProductDetailScreen({
                 [
                   {
                     text: '확인',
-                    onPress: () => {
-                      if (onCloseModal) {
-                        onCloseModal();
-                      } else if (navigation) {
-                        navigation.goBack();
-                      }
-                      navigationService.redirectTab('cart');
-                    }
                   }
                 ]
               );
@@ -137,14 +121,6 @@ export function ProductDetailScreen({
                 [
                   {
                     text: '확인',
-                    onPress: () => {
-                      if (onCloseModal) {
-                        onCloseModal();
-                      } else if (navigation) {
-                        navigation.goBack();
-                      }
-                      navigationService.redirectTab('cart');
-                    }
                   }
                 ]
               );

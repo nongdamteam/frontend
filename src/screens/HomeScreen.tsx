@@ -4,11 +4,11 @@ import {
   ImageBackground,
   ImageSourcePropType,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -24,6 +24,8 @@ import ProductDetailScreen from '@/screens/ProductDetail';
 import RecipeListScreen from '@/screens/RecipeList/RecipeListScreen';
 import {IProduct, SortOption} from '@/screens/ProductList/types';
 import {MOCK_PRODUCTS} from '@/screens/ProductList/hooks/useProducts';
+import { navigationService } from '@/services/navigationService';
+import { MOCK_RECIPES } from './RecipeList/RecipeListScreen';
 
 type ScreenMode = 'main' | 'products';
 
@@ -75,28 +77,7 @@ const products = [
   },
 ];
 
-const recipes: Recipe[] = [
-  {
-    id: 'shrimp-pancake',
-    title: '냉이새우부침',
-    image: homeImages.recipes.shrimpPancake,
-  },
-  {
-    id: 'pork-wrap',
-    title: '냉이새우보쌈',
-    image: homeImages.recipes.porkWrap,
-  },
-  {
-    id: 'bibimbap1',
-    title: '봄동비빔밥',
-    image: homeImages.recipes.bibimbapOne,
-  },
-  {
-    id: 'bibimbap2',
-    title: '봄동비빔밥',
-    image: homeImages.recipes.bibimbapTwo,
-  },
-];
+
 
 const groupBuys: GroupBuyItem[] = [
   {
@@ -191,10 +172,28 @@ interface MainHomeScreenProps {
 
 function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+  const scrollViewRef = React.useRef<ScrollView>(null);
+
+  React.useEffect(() => {
+    navigationService.registerScrollToTop('home', () => {
+      if (navigation.canGoBack()) {
+        navigation.popToTop();
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+        }, 100);
+      } else {
+        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      }
+    });
+    return () => {
+      navigationService.unregisterScrollToTop('home');
+    };
+  }, [navigation]);
 
   const swipeGesture = Gesture.Pan()
-    .activeOffsetX([20, 99999])
-    .failOffsetY([-15, 15])
+    .hitSlop({ left: 0, width: 70 })
+    .activeOffsetX([40, 99999])
+    .failOffsetY([-5, 5])
     .onUpdate(event => {
       'worklet';
       if (onSwipeProgress) {
@@ -247,6 +246,7 @@ function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
     <GestureDetector gesture={swipeGesture}>
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView
+          ref={scrollViewRef}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}>
           <Text style={styles.mainLogo}>농담 🌱</Text>
@@ -278,10 +278,19 @@ function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
 
           <HomeSection onViewAll={handleOpenRecipes} title="이런 레시피 어때요?">
             <View style={styles.tileGrid}>
-              {recipes.map(recipe => (
+              {MOCK_RECIPES.slice(0, 4).map(recipe => (
                 <Pressable
                   key={recipe.id}
-                  onPress={handleOpenRecipes}
+                  onPress={() => {
+                    if (recipe.id.startsWith('feed-')) {
+                      navigationService.redirectTab('babs');
+                      setTimeout(() => {
+                        navigationService.navigateToBabsFeed(recipe.id);
+                      }, 100);
+                    } else {
+                      handleOpenRecipes();
+                    }
+                  }}
                   style={({pressed}) => [
                     styles.tileItem,
                     pressed && styles.pressed,

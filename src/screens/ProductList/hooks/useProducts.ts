@@ -10,7 +10,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 0.8,
     participantsCount: 25,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '2',
@@ -20,7 +20,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 1.5,
     participantsCount: 8,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: 'https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '3',
@@ -30,7 +30,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 2.3,
     participantsCount: 12,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: 'https://images.unsplash.com/photo-1604085792782-8d92f276d7d8?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '4',
@@ -40,7 +40,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 3.1,
     participantsCount: 5,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: 'https://images.unsplash.com/photo-1550147760-44c9966d6bc7?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '5',
@@ -50,7 +50,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: false,
     distance: 4.5,
     participantsCount: 0,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: 'https://images.unsplash.com/photo-1628773822503-930a8589c09c?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '6',
@@ -60,7 +60,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 1.2,
     participantsCount: 19,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '7',
@@ -70,7 +70,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 5.2,
     participantsCount: 3,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '8',
@@ -80,7 +80,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: false,
     distance: 3.8,
     participantsCount: 30,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '9',
@@ -90,7 +90,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 0.5,
     participantsCount: 14,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: 'https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?w=500&auto=format&fit=crop&q=80',
   },
   {
     id: '10',
@@ -100,7 +100,7 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 8.4,
     participantsCount: 22,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: 'https://images.unsplash.com/photo-1604085792782-8d92f276d7d8?w=500&auto=format&fit=crop&q=80',
   },
   // 2페이지용 데이터
   {

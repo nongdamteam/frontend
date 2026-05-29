@@ -28,7 +28,7 @@ export function ProductCard({ product, onPress, rank }: ProductCardProps) {
     >
       <View style={styles.imageContainer}>
         <Image
-          source={product.image}
+          source={typeof product.image === 'string' ? { uri: product.image } : product.image}
           style={styles.image}
           resizeMode="cover"
         />

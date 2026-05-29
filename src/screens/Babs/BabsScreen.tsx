@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { navigationService } from '@/services/navigationService';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { FeedItem as FeedItemType, FeedTag } from '@/@types/feed';
@@ -32,6 +33,22 @@ export function BabsScreen({ onSwipeLeft, onSwipeRight, onSwipeProgress, onSwipe
   const { data, isLoading, isError } = useBabsFeed();
   const { activeIndex, viewabilityConfigCallbackPairs } = useActiveVideoIndex(0);
   const sheetRef = useRef<ProductSheetRef>(null);
+  const flatListRef = useRef<FlatList>(null);
+
+  useEffect(() => {
+    navigationService.setBabsNavigationCallback((feedId) => {
+      const index = data?.findIndex(item => item.id === feedId);
+      if (index !== undefined && index !== -1 && flatListRef.current) {
+        // Wait a brief moment to ensure FlatList is laid out
+        setTimeout(() => {
+          flatListRef.current?.scrollToIndex({ index, animated: false });
+        }, 100);
+      }
+    });
+    return () => {
+      navigationService.setBabsNavigationCallback(null);
+    };
+  }, [data]);
 
   const handleTagPress = useCallback((tag: FeedTag) => {
     console.log('[BabsScreen] handleTagPress tag.keyword:', tag.keyword);
@@ -67,12 +84,13 @@ export function BabsScreen({ onSwipeLeft, onSwipeRight, onSwipeProgress, onSwipe
     );
   }
 
-  // 가로 스와이프 제스처: 좌우 충분히 그었을 때만 인식
-  // activeOffsetX: 가로 20px 이상 움직이면 제스처 활성
-  // failOffsetY: 세로로 15px 넘게 움직이면 제스처 실패 (피드 스크롤이 우선)
+  // 가로 스와이프 제스처: 우측 끝에서 좌측으로 충분히 그었을 때만 인식
+  // activeOffsetX: 가로 40px 이상 움직이면 제스처 활성
+  // failOffsetY: 세로로 5px 넘게 움직이면 제스처 실패 (피드 스크롤이 우선)
   const swipeGesture = Gesture.Pan()
-    .activeOffsetX([-20, 20])
-    .failOffsetY([-15, 15])
+    .hitSlop({ right: 0, width: 70 })
+    .activeOffsetX([-40, 40])
+    .failOffsetY([-5, 5])
     .onUpdate(event => {
       'worklet';
       if (onSwipeProgress) {
@@ -101,6 +119,7 @@ export function BabsScreen({ onSwipeLeft, onSwipeRight, onSwipeProgress, onSwipe
     <GestureDetector gesture={swipeGesture}>
       <View style={styles.container}>
       <FlatList
+        ref={flatListRef}
         data={data}
         keyExtractor={item => item.id}
         renderItem={renderItem}

@@ -7,17 +7,19 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BackHeader from '@/components/common/BackHeader';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '@/theme/colors'; // 기존 프로젝트에 설정된 색상 테마 사용 (없으면 기본값 폴백)
+import { navigationService } from '@/services/navigationService';
 
 // 레시피 아이템 인터페이스
 interface RecipeItem {
   id: string;
   title: string;
-  image: string;
+  image: any;
   aspectRatio: number; // 가변 높이를 연출하기 위한 종횡비
   author: {
     nickname: string;
@@ -28,11 +30,47 @@ interface RecipeItem {
 }
 
 // 풍성한 핀터레스트 레시피 피드용 목업 데이터
-const MOCK_RECIPES: RecipeItem[] = [
+export const MOCK_RECIPES: RecipeItem[] = [
+  {
+    id: 'feed-001',
+    title: '올봄 첫 봄동 비빔밥 🌱',
+    image: require('@/assets/images/feed/bomdong_bibimbap.png'),
+    aspectRatio: 0.9,
+    author: {
+      nickname: '철원농부 김씨',
+      avatar: 'https://picsum.photos/seed/user1/100/100',
+    },
+    likes: 1240,
+    tags: ['#봄동', '#비빔밥', '#달래'],
+  },
+  {
+    id: 'feed-002',
+    title: '냉이된장국 한 그릇',
+    image: require('@/assets/images/feed/naengi_doenjang_guk.png'),
+    aspectRatio: 1.1,
+    author: {
+      nickname: '충남 서산 농장',
+      avatar: 'https://picsum.photos/seed/user2/100/100',
+    },
+    likes: 892,
+    tags: ['#냉이', '#된장국', '#해장국'],
+  },
+  {
+    id: 'feed-003',
+    title: '오늘 수확한 친환경 채소',
+    image: require('@/assets/images/feed/eco_vegetables.png'),
+    aspectRatio: 0.8,
+    author: {
+      nickname: '유기농 스마트팜',
+      avatar: 'https://picsum.photos/seed/user3/100/100',
+    },
+    likes: 530,
+    tags: ['#친환경', '#상추', '#스마트팜'],
+  },
   {
     id: 'r1',
     title: '새콤달콤 밥도둑 봄동겉절이',
-    image: 'https://picsum.photos/seed/recipe1/400/500',
+    image: 'https://images.unsplash.com/photo-1628773822503-930a8589c09c?w=500&auto=format&fit=crop&q=80',
     aspectRatio: 0.8, // 400x500
     author: {
       nickname: 'najeongwhan',
@@ -44,7 +82,7 @@ const MOCK_RECIPES: RecipeItem[] = [
   {
     id: 'r2',
     title: '바삭바삭 봄동전 만들기 꿀팁',
-    image: 'https://picsum.photos/seed/recipe2/400/300',
+    image: 'https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=500&auto=format&fit=crop&q=80',
     aspectRatio: 1.33, // 400x300
     author: {
       nickname: 'dong__415',
@@ -56,7 +94,7 @@ const MOCK_RECIPES: RecipeItem[] = [
   {
     id: 'r3',
     title: '구수하고 달큰한 백종원 봄동된장국',
-    image: 'https://picsum.photos/seed/recipe3/400/400',
+    image: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=500&auto=format&fit=crop&q=80',
     aspectRatio: 1.0, // 400x400
     author: {
       nickname: 'ddanggong',
@@ -68,7 +106,7 @@ const MOCK_RECIPES: RecipeItem[] = [
   {
     id: 'r4',
     title: '나른한 봄날을 깨우는 봄동 샐러드',
-    image: 'https://picsum.photos/seed/recipe4/400/550',
+    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&auto=format&fit=crop&q=80',
     aspectRatio: 0.72, // 400x550
     author: {
       nickname: 'yejida',
@@ -80,7 +118,7 @@ const MOCK_RECIPES: RecipeItem[] = [
   {
     id: 'r5',
     title: '아삭함이 살아있는 봄동 달래 비빔밥',
-    image: 'https://picsum.photos/seed/recipe5/400/450',
+    image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=500&auto=format&fit=crop&q=80',
     aspectRatio: 0.89, // 400x450
     author: {
       nickname: 'cooking_mama',
@@ -92,7 +130,7 @@ const MOCK_RECIPES: RecipeItem[] = [
   {
     id: 'r6',
     title: '봄나물 한가득! 봄동 냉이 샤브샤브',
-    image: 'https://picsum.photos/seed/recipe6/400/320',
+    image: 'https://images.unsplash.com/photo-1547928576-a4a3323d8b62?w=500&auto=format&fit=crop&q=80',
     aspectRatio: 1.25, // 400x320
     author: {
       nickname: 'healthy_green',
@@ -104,7 +142,7 @@ const MOCK_RECIPES: RecipeItem[] = [
   {
     id: 'r7',
     title: '봄동과 찰떡궁합 대패삼겹살 봄동쌈',
-    image: 'https://picsum.photos/seed/recipe7/400/520',
+    image: 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?w=500&auto=format&fit=crop&q=80',
     aspectRatio: 0.77, // 400x520
     author: {
       nickname: 'meat_lover',
@@ -116,7 +154,7 @@ const MOCK_RECIPES: RecipeItem[] = [
   {
     id: 'r8',
     title: '봄동 쌈장 무침 반찬 만들기',
-    image: 'https://picsum.photos/seed/recipe8/400/380',
+    image: 'https://images.unsplash.com/photo-1604085792782-8d92f276d7d8?w=500&auto=format&fit=crop&q=80',
     aspectRatio: 1.05, // 400x380
     author: {
       nickname: 'side_dish_king',
@@ -126,6 +164,10 @@ const MOCK_RECIPES: RecipeItem[] = [
     tags: ['#밑반찬', '#쌈장무침', '#초스피드'],
   },
 ];
+
+function imageSource(image: any) {
+  return typeof image === 'string' ? { uri: image } : image;
+}
 
 export function RecipeListScreen() {
   const insets = useSafeAreaInsets();
@@ -160,12 +202,28 @@ export function RecipeListScreen() {
   const renderCard = (item: RecipeItem) => {
     const likeInfo = likesData[item.id] || { count: item.likes, liked: false };
 
+    const handlePress = () => {
+      if (item.id.startsWith('feed-')) {
+        navigationService.redirectTab('babs');
+        setTimeout(() => {
+          navigationService.navigateToBabsFeed(item.id);
+        }, 100);
+      } else {
+        Alert.alert('레시피 안내', '이 레시피는 준비 중입니다.');
+      }
+    };
+
     return (
-      <View key={item.id} style={styles.card}>
+      <TouchableOpacity
+        key={item.id}
+        style={styles.card}
+        activeOpacity={0.9}
+        onPress={handlePress}
+      >
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: item.image }}
-            style={[styles.cardImage, { aspectRatio: item.aspectRatio }]}
+            source={imageSource(item.image)}
+            style={[styles.cardImage, { aspectRatio: item.aspectRatio, height: undefined }]}
             resizeMode="cover"
           />
         </View>
@@ -204,7 +262,7 @@ export function RecipeListScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
