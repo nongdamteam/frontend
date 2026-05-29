@@ -18,6 +18,7 @@ import { COLORS } from '@/constants/colors.local';
 import { RADIUS, SPACING } from '@/constants/layout';
 import { UploadProvider, useUploadContext } from './context/UploadContext';
 import { MediaSelectScreen } from './screens/MediaSelectScreen';
+import { DetailFormScreen } from './screens/DetailFormScreen';
 
 export interface UploadModalRef {
   open: () => void;
@@ -91,7 +92,10 @@ function StepRouter({ onClose }: { onClose: () => void }) {
     return <MediaSelectScreen onClose={onClose} />;
   }
 
-  // TODO(5단계): DetailFormScreen
+  if (step === 'detail') {
+    return <DetailFormScreen onClose={onClose} />;
+  }
+
   // TODO(7단계): TagPositionScreen
   return (
     <View style={styles.placeholder}>
