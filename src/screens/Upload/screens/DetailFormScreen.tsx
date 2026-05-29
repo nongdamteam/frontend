@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Image, StyleSheet, View } from 'react-native';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { ProductListItem } from '@/@types/product';
@@ -7,6 +7,8 @@ import { COLORS } from '@/constants/colors.local';
 import { RADIUS, SPACING } from '@/constants/layout';
 import { createTempId } from '@/utils/id';
 import { useUploadDraft } from '../hooks/useUploadDraft';
+import { useUploadContent } from '../hooks/useUploadContent';
+import { buildUploadPayload } from '../utils/buildUploadPayload';
 import { UploadHeader } from '../components/UploadHeader';
 import { CaptionInput } from '../components/CaptionInput';
 import { TagTray } from '../components/TagTray';
@@ -15,6 +17,7 @@ import {
   ProductSearchSheet,
   ProductSearchSheetRef,
 } from '../components/ProductSearchSheet';
+import { UploadStatusOverlay } from '../components/UploadStatusOverlay';
 
 interface DetailFormScreenProps {
   onClose: () => void;
@@ -32,6 +35,24 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
     hasPendingTags,
   } = useUploadDraft();
   const searchSheetRef = useRef<ProductSearchSheetRef>(null);
+  const { mutate: upload, isPending, isSuccess, isError, error } =
+    useUploadContent();
+  const [closeQueued, setCloseQueued] = useState(false);
+
+  // 성공 후 잠깐 보여주고 자동 닫기 (1.2s)
+  useEffect(() => {
+    if (!isSuccess) return;
+    const id = setTimeout(() => {
+      setCloseQueued(true);
+    }, 1200);
+    return () => clearTimeout(id);
+  }, [isSuccess]);
+
+  useEffect(() => {
+    if (closeQueued) {
+      onClose();
+    }
+  }, [closeQueued, onClose]);
 
   const handleAddTag = () => {
     searchSheetRef.current?.open();
@@ -62,10 +83,21 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
       Alert.alert('태그 위치를 지정해주세요', '모든 태그에 위치가 필요해요.');
       return;
     }
-    // TODO(8단계): 실제 업로드 핸들러
-    console.log('[Upload draft]', draft);
-    onClose();
+    try {
+      const payload = buildUploadPayload(draft);
+      upload(payload);
+    } catch (e) {
+      Alert.alert('업로드 준비 실패', (e as Error).message);
+    }
   };
+
+  const overlayState: 'idle' | 'uploading' | 'success' | 'error' = isPending
+    ? 'uploading'
+    : isSuccess
+    ? 'success'
+    : isError
+    ? 'error'
+    : 'idle';
 
   return (
     <View style={styles.container}>
@@ -74,7 +106,7 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
         leadingIcon="chevron-back"
         onLeadingPress={() => goTo('media')}
         trailingLabel="업로드"
-        trailingDisabled={!canSubmit}
+        trailingDisabled={!canSubmit || isPending}
         onTrailingPress={handleSubmit}
       />
 
@@ -120,6 +152,11 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
         ref={searchSheetRef}
         addedKeywords={draft.tags.map(t => t.keyword)}
         onSelect={handleSearchSelect}
+      />
+
+      <UploadStatusOverlay
+        state={overlayState}
+        errorMessage={(error as Error | undefined)?.message}
       />
     </View>
   );
