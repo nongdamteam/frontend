@@ -6,6 +6,8 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import { FeedItem as FeedItemType, FeedTag } from '@/@types/feed';
 import { Typography } from '@/components/common/Typography';
 import { COLORS } from '@/constants/colors.local';
@@ -13,10 +15,17 @@ import { SCREEN } from '@/constants/layout';
 import { useActiveVideoIndex } from '@/hooks/useActiveVideoIndex';
 import { ProductSheet, ProductSheetRef } from '@/screens/ProductSheet/ProductSheet';
 import { FeedItem } from './components/FeedItem';
-import { useHomeFeed } from './hooks/useHomeFeed';
+import { useBabsFeed } from './hooks/useBabsFeed';
 
-export function HomeScreen() {
-  const { data, isLoading, isError } = useHomeFeed();
+interface BabsScreenProps {
+  /** 좌측 스와이프 시 호출 (다음 탭으로 이동) */
+  onSwipeLeft?: () => void;
+  /** 우측 스와이프 시 호출 (이전 탭으로 이동) */
+  onSwipeRight?: () => void;
+}
+
+export function BabsScreen({ onSwipeLeft, onSwipeRight }: BabsScreenProps) {
+  const { data, isLoading, isError } = useBabsFeed();
   const { activeIndex, viewabilityConfigCallbackPairs } = useActiveVideoIndex(0);
   const sheetRef = useRef<ProductSheetRef>(null);
 
@@ -53,8 +62,25 @@ export function HomeScreen() {
     );
   }
 
+  // 가로 스와이프 제스처: 좌우 충분히 그었을 때만 인식
+  // activeOffsetX: 가로 20px 이상 움직이면 제스처 활성
+  // failOffsetY: 세로로 15px 넘게 움직이면 제스처 실패 (피드 스크롤이 우선)
+  const swipeGesture = Gesture.Pan()
+    .activeOffsetX([-20, 20])
+    .failOffsetY([-15, 15])
+    .onEnd(event => {
+      'worklet';
+      const SWIPE_THRESHOLD = 50;
+      if (event.translationX < -SWIPE_THRESHOLD && onSwipeLeft) {
+        runOnJS(onSwipeLeft)();
+      } else if (event.translationX > SWIPE_THRESHOLD && onSwipeRight) {
+        runOnJS(onSwipeRight)();
+      }
+    });
+
   return (
-    <>
+    <GestureDetector gesture={swipeGesture}>
+      <View style={styles.container}>
       <FlatList
         data={data}
         keyExtractor={item => item.id}
@@ -76,11 +102,13 @@ export function HomeScreen() {
         })}
       />
       <ProductSheet ref={sheetRef} />
-    </>
+      </View>
+    </GestureDetector>
   );
 }
 
 const styles = StyleSheet.create({
+  container: { flex: 1 },
   center: {
     flex: 1,
     alignItems: 'center',
