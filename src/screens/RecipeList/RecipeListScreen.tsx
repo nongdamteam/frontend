@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import BackHeader from '@/components/common/BackHeader';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '@/theme/colors'; // 기존 프로젝트에 설정된 색상 테마 사용 (없으면 기본값 폴백)
 
@@ -209,18 +210,7 @@ export function RecipeListScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 커스텀 헤더 (뒤로 가기) */}
-      <View style={[styles.header, { paddingTop: insets.top, height: 56 + insets.top }]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.backArrow}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>추천 레시피 피드</Text>
-        <View style={styles.headerPlaceholder} />
-      </View>
+      <BackHeader title="추천 레시피 피드" />
 
       <ScrollView
         style={styles.scroll}

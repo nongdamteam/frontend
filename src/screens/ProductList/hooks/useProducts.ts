@@ -357,9 +357,9 @@ export const MOCK_PRODUCTS: IProduct[] = [
   },
 ];
 
-const ITEMS_PER_PAGE = 10;
+export const ITEMS_PER_PAGE = 10;
 
-export function useProducts(initialSearchQuery?: string, initialGroupPurchaseOnly?: boolean, initialSortOption?: SortOption) {
+export function useProducts(initialSearchQuery?: string, initialGroupPurchaseOnly?: boolean, initialSortOption?: SortOption, maxItems?: number) {
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery || '');
   const [sortOption, setSortOption] = useState<SortOption>(initialSortOption || 'none');
   const [isGroupPurchaseOnly, setIsGroupPurchaseOnly] = useState(initialGroupPurchaseOnly || false);
@@ -388,6 +388,11 @@ export function useProducts(initialSearchQuery?: string, initialGroupPurchaseOnl
       result.sort((a, b) => a.pricePer100g - b.pricePer100g);
     } else if (sortOption === 'participants') {
       result.sort((a, b) => b.participantsCount - a.participantsCount);
+    }
+
+    // If caller requested a maximum number of items (e.g., show top 100), slice here
+    if (typeof maxItems === 'number' && maxItems > 0) {
+      return result.slice(0, maxItems);
     }
 
     return result;
