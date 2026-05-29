@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 import FastImage from '@d11/react-native-fast-image';
 import { ProductListItem as ProductListItemType } from '@/@types/product';
 import { Chip } from '@/components/common/Chip';
@@ -19,7 +19,14 @@ export function ProductListItem({ product, onPress }: ProductListItemProps) {
       style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}
     >
       {product.thumbnailUrl ? (
-        <FastImage source={{ uri: product.thumbnailUrl }} style={styles.thumb} />
+        typeof product.thumbnailUrl === 'number' ? (
+          <Image source={product.thumbnailUrl} style={styles.thumb} />
+        ) : (
+          <FastImage
+            source={{ uri: product.thumbnailUrl }}
+            style={styles.thumb}
+          />
+        )
       ) : (
         <View style={[styles.thumb, styles.thumbPlaceholder]} />
       )}

@@ -1,3 +1,5 @@
+import { MediaSource } from './feed';
+
 export type ProductSortType =
   | 'distance'
   | 'priceLow'
@@ -16,7 +18,7 @@ export interface ProductListItem {
   /** 검색 키워드 (태그와 매칭) */
   keyword: string;
   name: string;
-  thumbnailUrl?: string;
+  thumbnailUrl?: MediaSource;
   /** 단위(예: 100g) */
   unit: string;
   /** 단위당 가격 (원) */
@@ -30,8 +32,8 @@ export interface ProductListItem {
 }
 
 export interface ProductDetail extends ProductListItem {
-  /** 상세 이미지 URL 목록 */
-  images: string[];
+  /** 상세 캐러셀 이미지 (외부 URL 또는 require된 로컬 자산) */
+  images: MediaSource[];
   /** "5일 전에는 100g당 1,500원이었어요!" 같은 가격 변동 안내 */
   priceHistoryNote?: string;
 }

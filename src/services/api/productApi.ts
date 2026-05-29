@@ -1,8 +1,8 @@
 import { ProductDetail, ProductListItem, ProductSortType } from '@/@types/product';
-import productsMock from '@/assets/mock/products.json';
+import { PRODUCTS_MOCK } from '@/assets/mock/products';
 import { mockResolve } from './client';
 
-const ALL_PRODUCTS = productsMock as ProductDetail[];
+const ALL_PRODUCTS = PRODUCTS_MOCK;
 
 function sortProducts(
   list: ProductListItem[],

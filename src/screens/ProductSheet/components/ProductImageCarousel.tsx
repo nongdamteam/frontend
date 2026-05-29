@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
   StyleSheet,
@@ -7,11 +8,12 @@ import {
 } from 'react-native';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import FastImage from '@d11/react-native-fast-image';
+import { MediaSource } from '@/@types/feed';
 import { COLORS } from '@/constants/colors.local';
 import { RADIUS, SPACING } from '@/constants/layout';
 
 interface ProductImageCarouselProps {
-  images: string[];
+  images: MediaSource[];
   width: number;
   height: number;
 }
@@ -37,25 +39,32 @@ export function ProductImageCarousel({
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
-        {images.map((uri, i) => (
-          <View key={`${uri}-${i}`} style={{ width, height }}>
-            <FastImage
-              source={{ uri }}
-              style={StyleSheet.absoluteFillObject}
-              resizeMode={FastImage.resizeMode.cover}
-            />
+        {images.map((src, i) => (
+          <View key={i} style={{ width, height }}>
+            {typeof src === 'number' ? (
+              <Image
+                source={src}
+                style={styles.image}
+                resizeMode="contain"
+              />
+            ) : (
+              <FastImage
+                source={{ uri: src }}
+                style={styles.image}
+                resizeMode={FastImage.resizeMode.contain}
+              />
+            )}
           </View>
         ))}
       </BottomSheetScrollView>
 
-      <View style={styles.dots} pointerEvents="none">
-        {images.map((_, i) => (
-          <View
-            key={i}
-            style={[styles.dot, i === index && styles.dotActive]}
-          />
-        ))}
-      </View>
+      {images.length > 1 ? (
+        <View style={styles.dots} pointerEvents="none">
+          {images.map((_, i) => (
+            <View key={i} style={[styles.dot, i === index && styles.dotActive]} />
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -65,6 +74,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surfaceMuted,
     borderRadius: RADIUS.lg,
     overflow: 'hidden',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   dots: {
     position: 'absolute',

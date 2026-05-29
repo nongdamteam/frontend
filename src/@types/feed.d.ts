@@ -12,8 +12,8 @@ export interface FeedTag {
   label: string;
   /** 라벨에 표시할 평균 가격 (원 단위) */
   averagePrice: number;
-  /** 라벨 썸네일 이미지 URL (옵션) */
-  thumbnailUrl?: string;
+  /** 라벨 썸네일 이미지 (외부 URL 또는 require된 로컬 자산) */
+  thumbnailUrl?: MediaSource;
   x: number;
   y: number;
 }
