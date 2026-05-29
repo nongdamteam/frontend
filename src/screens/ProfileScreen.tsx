@@ -1,7 +1,7 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { COLORS } from '@/theme/colors';
-import { typography, spacing } from '../styles/theme';
+import { typography, spacing, colors } from '../styles/theme';
 
 export default function ProfileScreen() {
   return (
@@ -29,11 +29,11 @@ const styles = StyleSheet.create({
     ...typography.headline,
     fontWeight: '800',
     marginBottom: spacing.md,
-    color: COLORS.text,
+    color: colors.text,
   },
   subtitle: {
     ...typography.body,
-    color: COLORS.textSecondary,
+    color: colors.subtleText,
     textAlign: 'center',
   },
 });

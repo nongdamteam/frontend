@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -19,6 +19,7 @@ import { FarmGroupCard } from '../components/cart/FarmGroupCard';
 import OrderHistoryScreen from './OrderHistoryScreen';
 import DeliveryAddressScreen, { DeliveryAddress } from './DeliveryAddressScreen';
 import BackButton from '../components/common/BackButton';
+import { cartService } from '@/services/cartService';
 
 interface CartItem {
   id: string;
@@ -67,73 +68,8 @@ const initialFarms: Farm[] = [
   },
 ];
 
-const initialItems: CartItem[] = [
-  {
-    id: 'nei_300g',
-    farmId: 'cheorwon',
-    title: '철원 냉이 300g',
-    option: '옵션: 300g · 노지 봄나물 · 산지직송',
-    recipeSource: '냉이 된장국 레시피에서 추가됨',
-    unitPrice: 5900,
-    quantity: 2,
-    checked: true,
-    duplicateWarning: {
-      message: '중복 농산물: 봄나물 비빔밥에도 담김',
-      show: true,
-    },
-    image: cartImages.products.nei,
-  },
-  {
-    id: 'rice_2kg',
-    farmId: 'cheorwon',
-    title: '철원 오대쌀 2kg',
-    option: '옵션: 2kg · 2026년 햅쌀 · 농장 도정',
-    recipeSource: '냉이 된장국 한상에서 추가됨',
-    unitPrice: 9800,
-    quantity: 1,
-    checked: true,
-    image: cartImages.products.rice,
-  },
-  {
-    id: 'mushroom_200g',
-    farmId: 'cheorwon',
-    title: '영양 생표고버섯 200g',
-    option: '옵션: 200g · 무농약 · 당일 선별',
-    recipeSource: '버섯 솥밥 레시피에서 추가됨',
-    unitPrice: 6300,
-    quantity: 1,
-    checked: true,
-    image: cartImages.products.mushroom,
-  },
-  {
-    id: 'bomdong_1',
-    farmId: 'haenam',
-    title: '해남 봄동 1포기',
-    option: '옵션: 1포기 · 겉절이용 · 당일 수확',
-    recipeSource: '봄동 겉절이 레시피에서 추가됨',
-    unitPrice: 4500,
-    originalUnitPrice: 4200,
-    quantity: 1,
-    checked: true,
-    priceChangedNote: '수확량 감소로 담을 때보다 300원 올랐습니다.',
-    image: cartImages.products.bomdong,
-  },
-  {
-    id: 'sebal_200g',
-    farmId: 'haenam',
-    title: '해남 세발나물 200g',
-    option: '옵션: 200g · 갯벌 노지재배 · 냉장',
-    recipeSource: '봄나물 비빔밥에서 추가됨',
-    unitPrice: 2900,
-    quantity: 1,
-    checked: false,
-    isSoldOut: true,
-    image: cartImages.products.sebal,
-  },
-];
-
 export default function CartScreen() {
-  const [items, setItems] = useState<CartItem[]>(initialItems);
+  const [items, setItems] = useState<CartItem[]>(cartService.getCartItems());
   const [farms, setFarms] = useState<Farm[]>(initialFarms);
   const [showOrderHistory, setShowOrderHistory] = useState(false);
   const [showAddressScreen, setShowAddressScreen] = useState(false);
@@ -144,6 +80,18 @@ export default function CartScreen() {
     detail: '강남파이낸스센터 10층',
     isEarlyMorning: true,
   });
+
+  useEffect(() => {
+    if (cartService.getShouldShowOrderHistory()) {
+      setShowOrderHistory(true);
+      cartService.setShouldShowOrderHistory(false);
+    }
+
+    const unsubscribe = cartService.subscribe(() => {
+      setItems(cartService.getCartItems());
+    });
+    return unsubscribe;
+  }, []);
 
   const LocationIcon = () => (
     <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -221,41 +169,39 @@ export default function CartScreen() {
   const grandTotal = useMemo(() => totalProductPrice + totalDeliveryFee, [totalProductPrice, totalDeliveryFee]);
 
   const handleToggleItem = (itemId: string) => {
-    setItems(prev =>
-      prev.map(item => {
-        if (item.id === itemId && !item.isSoldOut) {
-          return { ...item, checked: !item.checked };
-        }
-        return item;
-      })
-    );
+    const updated = items.map(item => {
+      if (item.id === itemId && !item.isSoldOut) {
+        return { ...item, checked: !item.checked };
+      }
+      return item;
+    });
+    cartService.setCartItems(updated);
   };
 
   const handleToggleFarm = (farmId: string, currentAllChecked: boolean) => {
-    setItems(prev =>
-      prev.map(item => {
-        if (item.farmId === farmId && !item.isSoldOut) {
-          return { ...item, checked: !currentAllChecked };
-        }
-        return item;
-      })
-    );
+    const updated = items.map(item => {
+      if (item.farmId === farmId && !item.isSoldOut) {
+        return { ...item, checked: !currentAllChecked };
+      }
+      return item;
+    });
+    cartService.setCartItems(updated);
   };
 
   const handleToggleAll = () => {
     const nextState = !isAllChecked;
-    setItems(prev =>
-      prev.map(item => {
-        if (!item.isSoldOut) {
-          return { ...item, checked: nextState };
-        }
-        return item;
-      })
-    );
+    const updated = items.map(item => {
+      if (!item.isSoldOut) {
+        return { ...item, checked: nextState };
+      }
+      return item;
+    });
+    cartService.setCartItems(updated);
   };
 
   const handleDeleteItem = (itemId: string) => {
-    setItems(prev => prev.filter(item => item.id !== itemId));
+    const updated = items.filter(item => item.id !== itemId);
+    cartService.setCartItems(updated);
   };
 
   const handleDeleteSelected = () => {
@@ -273,7 +219,8 @@ export default function CartScreen() {
           text: '삭제',
           style: 'destructive',
           onPress: () => {
-            setItems(prev => prev.filter(item => !item.checked || item.isSoldOut));
+            const updated = items.filter(item => !item.checked || item.isSoldOut);
+            cartService.setCartItems(updated);
           },
         },
       ]
@@ -281,45 +228,42 @@ export default function CartScreen() {
   };
 
   const handleUpdateQuantity = (itemId: string, increment: number) => {
-    setItems(prev =>
-      prev.map(item => {
-        if (item.id === itemId) {
-          const nextQty = Math.max(1, item.quantity + increment);
-          return { ...item, quantity: nextQty };
-        }
-        return item;
-      })
-    );
+    const updated = items.map(item => {
+      if (item.id === itemId) {
+        const nextQty = Math.max(1, item.quantity + increment);
+        return { ...item, quantity: nextQty };
+      }
+      return item;
+    });
+    cartService.setCartItems(updated);
   };
 
   const handleMergeQuantity = (itemId: string) => {
-    setItems(prev =>
-      prev.map(item => {
-        if (item.id === itemId) {
-          return {
-            ...item,
-            quantity: item.quantity + 1,
-            duplicateWarning: undefined,
-          };
-        }
-        return item;
-      })
-    );
+    const updated = items.map(item => {
+      if (item.id === itemId) {
+        return {
+          ...item,
+          quantity: item.quantity + 1,
+          duplicateWarning: undefined,
+        };
+      }
+      return item;
+    });
+    cartService.setCartItems(updated);
     Alert.alert('알림', '동일한 상품의 수량이 비빔밥 재료분까지 합쳐졌습니다.');
   };
 
   const handleSeparatePurchase = (itemId: string) => {
-    setItems(prev =>
-      prev.map(item => {
-        if (item.id === itemId) {
-          return {
-            ...item,
-            duplicateWarning: undefined,
-          };
-        }
-        return item;
-      })
-    );
+    const updated = items.map(item => {
+      if (item.id === itemId) {
+        return {
+          ...item,
+          duplicateWarning: undefined,
+        };
+      }
+      return item;
+    });
+    cartService.setCartItems(updated);
   };
 
   const handleCheckout = () => {
@@ -327,7 +271,19 @@ export default function CartScreen() {
       Alert.alert('알림', '결제할 상품을 선택해주세요.');
       return;
     }
-    Alert.alert('주문 완료', `총 ${checkedItemsCount}개의 상품 ${grandTotal.toLocaleString()}원 결제가 진행됩니다.`);
+    Alert.alert(
+      '주문 완료',
+      `총 ${checkedItemsCount}개의 상품 ${grandTotal.toLocaleString()}원 결제가 완료되었습니다.`,
+      [
+        {
+          text: '확인',
+          onPress: () => {
+            cartService.checkoutCheckedItems();
+            setShowOrderHistory(true);
+          },
+        },
+      ]
+    );
   };
 
   const formatPrice = (price: number) => `${price.toLocaleString()}원`;

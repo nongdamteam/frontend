@@ -11,8 +11,14 @@ const CAROUSEL_IMAGES = [
   require('@/assets/images/bomdong_fresh.png'),
 ];
 
-export function ImageCarousel() {
+interface ImageCarouselProps {
+  images?: any[];
+}
+
+export function ImageCarousel({ images }: ImageCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const displayImages = images && images.length > 0 ? images : CAROUSEL_IMAGES;
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
@@ -29,19 +35,19 @@ export function ImageCarousel() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        {CAROUSEL_IMAGES.map((img, index) => (
+        {displayImages.map((img, index) => (
           <Image
             key={`carousel-${index}`}
-            source={img}
+            source={typeof img === 'string' ? { uri: img } : img}
             style={[styles.carouselImage, { width: SCREEN_WIDTH }]}
             resizeMode="cover"
           />
         ))}
       </ScrollView>
       
-      {/* 4개의 점 인디케이터 */}
+      {/* 점 인디케이터 */}
       <View style={styles.indicatorContainer}>
-        {CAROUSEL_IMAGES.map((_, index) => (
+        {displayImages.map((_, index) => (
           <View
             key={`dot-${index}`}
             style={[

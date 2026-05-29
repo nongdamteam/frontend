@@ -1,11 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
   FlatList,
   ActivityIndicator,
-  SafeAreaView,
-  TouchableOpacity,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,33 +13,34 @@ import { styles } from './styles';
 import BackHeader from '@/components/common/BackHeader';
 import { COLORS } from '@/constants/colors';
 import { useProducts, ITEMS_PER_PAGE } from './hooks/useProducts';
+import { SortOption } from './types';
 
 // 공통 컴포넌트 임포트
 import SearchBar from '@/components/common/SearchBar';
-// import BottomNavBar from '@/components/common/BottomNavBar';
 
 // 화면 하위 컴포넌트 임포트
-import RecipeBanner from './components/RecipeBanner';
 import FilterBar from './components/FilterBar';
 import ProductCard from './components/ProductCard';
 import Pagination from './components/Pagination';
 
-export function ProductListScreen() {
-  const route = useRoute<RouteProp<HomeStackParamList, 'ProductList'>>();
-  const initialGroupPurchaseOnly = route.params?.isGroupPurchaseOnly ?? false;
-  const initialSearchQuery = route.params?.searchQuery ?? '';
-  const initialSortOption = route.params?.initialSortOption ?? 'none';
-  const isPopularRanking = route.params?.isPopularRanking ?? false;
+export interface ProductListContentProps {
+  productState: ReturnType<typeof useProducts>;
+  isPopularRanking?: boolean;
+  onProductPress?: (product: any) => void;
+}
 
-  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
-  const insets = useSafeAreaInsets();
-  
-  const [activeTab, setActiveTab] = useState('group'); // 하단 탭바 활성 탭
-
+/**
+ * 리스트 UI 렌더링만을 담당하는 순수 뷰 컴포넌트 (모달 및 스크린 공용)
+ * useRoute/useNavigation에 의존하지 않으므로 에러 크래시를 원천 차단합니다.
+ */
+export function ProductListContent({
+  productState,
+  isPopularRanking = false,
+  onProductPress,
+}: ProductListContentProps) {
   const {
     products,
     searchQuery,
-    setSearchQuery,
     sortOption,
     setSortOption,
     isGroupPurchaseOnly,
@@ -51,27 +50,19 @@ export function ProductListScreen() {
     isLoading,
     handlePageChange,
     totalItems,
-  } = useProducts(initialSearchQuery, initialGroupPurchaseOnly, initialSortOption, isPopularRanking ? 100 : undefined);
+  } = productState;
 
   const flatListRef = useRef<FlatList<any>>(null);
 
-  // Ensure list scrolls to top when page changes
   const onPageChange = (page: number) => {
     handlePageChange(page);
-    // after changing page, scroll list to top so user sees the first items
     try {
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-    } catch (e) {
-      // fallback: ignore if method not available
-    }
+    } catch (e) { }
   };
 
   return (
-    <View style={styles.container}>
-      <BackHeader
-        center={<SearchBar value={searchQuery} onChangeText={setSearchQuery} />}
-      />
-
+    <View style={{ flex: 1 }}>
       {/* 상품 목록 리스트 */}
       <FlatList
         ref={flatListRef}
@@ -80,7 +71,7 @@ export function ProductListScreen() {
         renderItem={({ item, index }) => (
           <ProductCard
             product={item}
-            onPress={() => navigation.navigate('Details', { product: item, entryPoint: 'list' })}
+            onPress={() => onProductPress?.(item)}
             rank={
               isPopularRanking
                 ? (currentPage - 1) * ITEMS_PER_PAGE + index + 1
@@ -92,7 +83,6 @@ export function ProductListScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View style={styles.listHeader}>
-
             {/* 필터 탭바 */}
             <FilterBar
               sortOption={sortOption}
@@ -100,7 +90,7 @@ export function ProductListScreen() {
               isGroupPurchaseOnly={isGroupPurchaseOnly}
               onGroupPurchaseToggle={() => setIsGroupPurchaseOnly(!isGroupPurchaseOnly)}
             />
-            
+
             {/* 검색 결과 표시 */}
             {searchQuery.trim() !== '' && (
               <Text style={{ fontSize: 13, color: COLORS.textSecondary, marginVertical: 10 }}>
@@ -121,7 +111,7 @@ export function ProductListScreen() {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>🥬</Text>
-            <Text style={styles.emptyText}>조건에 맞는 봄동 상품이 없습니다.</Text>
+            <Text style={styles.emptyText}>조건에 맞는 상품이 없습니다.</Text>
           </View>
         }
       />
@@ -132,11 +122,49 @@ export function ProductListScreen() {
           <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
       )}
-
-      {/* 하단 고정 네비게이션바 (자리를 남겨두는 것에서 나아가 실제 플레이스홀더 바 렌더링)
-      <BottomNavBar activeTab={activeTab} onTabPress={setActiveTab} />
-      */}
     </View>
   );
 }
+
+/**
+ * 기존 전체 화면 형태의 ProductListScreen
+ */
+export function ProductListScreen() {
+  const route = useRoute<RouteProp<HomeStackParamList, 'ProductList'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+
+  const initialGroupPurchaseOnly = route.params?.isGroupPurchaseOnly ?? false;
+  const initialSearchQuery = route.params?.searchQuery ?? '';
+  const initialSortOption = route.params?.initialSortOption ?? 'none';
+  const isPopularRanking = route.params?.isPopularRanking ?? false;
+
+  const productState = useProducts(
+    initialSearchQuery,
+    initialGroupPurchaseOnly,
+    initialSortOption,
+    isPopularRanking ? 100 : undefined
+  );
+
+  return (
+    <View style={styles.container}>
+      <BackHeader
+        center={
+          <SearchBar
+            value={productState.searchQuery}
+            onChangeText={productState.setSearchQuery}
+          />
+        }
+      />
+
+      <ProductListContent
+        productState={productState}
+        isPopularRanking={isPopularRanking}
+        onProductPress={(product) =>
+          navigation.navigate('Details', { product, entryPoint: 'list' })
+        }
+      />
+    </View>
+  );
+}
+
 export default ProductListScreen;

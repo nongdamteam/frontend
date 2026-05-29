@@ -359,7 +359,13 @@ export const MOCK_PRODUCTS: IProduct[] = [
 
 export const ITEMS_PER_PAGE = 10;
 
-export function useProducts(initialSearchQuery?: string, initialGroupPurchaseOnly?: boolean, initialSortOption?: SortOption, maxItems?: number) {
+export function useProducts(
+  initialSearchQuery?: string,
+  initialGroupPurchaseOnly?: boolean,
+  initialSortOption?: SortOption,
+  maxItems?: number,
+  customProducts?: IProduct[]
+) {
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery || '');
   const [sortOption, setSortOption] = useState<SortOption>(initialSortOption || 'none');
   const [isGroupPurchaseOnly, setIsGroupPurchaseOnly] = useState(initialGroupPurchaseOnly || false);
@@ -368,7 +374,7 @@ export function useProducts(initialSearchQuery?: string, initialGroupPurchaseOnl
 
   // 필터링 및 정렬 처리
   const filteredAndSortedProducts = useMemo(() => {
-    let result = [...MOCK_PRODUCTS];
+    let result = customProducts ? [...customProducts] : [...MOCK_PRODUCTS];
 
     // 1. 검색어 필터
     if (searchQuery.trim()) {

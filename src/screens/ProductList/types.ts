@@ -9,6 +9,7 @@ export interface IProduct {
   distance: number;              // 내 주변 거리 (단위: km)
   participantsCount: number;     // 공구 참여자 수
   image: ImageSourcePropType;    // 상품 이미지 소스
+  images?: any[];                // 상품 상세 캐러셀 이미지 배열
 }
 
 export type SortOption = 'distance' | 'price' | 'participants' | 'none';

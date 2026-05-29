@@ -5,8 +5,8 @@ import {
   NativeSyntheticEvent,
   StyleSheet,
   View,
+  ScrollView,
 } from 'react-native';
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import FastImage from '@d11/react-native-fast-image';
 import { MediaSource } from '@/@types/feed';
 import { COLORS } from '@/constants/colors.local';
@@ -32,7 +32,7 @@ export function ProductImageCarousel({
 
   return (
     <View style={[styles.container, { width, height }]}>
-      <BottomSheetScrollView
+      <ScrollView
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
@@ -56,7 +56,7 @@ export function ProductImageCarousel({
             )}
           </View>
         ))}
-      </BottomSheetScrollView>
+      </ScrollView>
 
       {images.length > 1 ? (
         <View style={styles.dots} pointerEvents="none">
