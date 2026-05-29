@@ -102,4 +102,30 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 100,
   },
+  searchHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F5F5',
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F1F3F5',
+    marginRight: 10,
+  },
+  backArrow: {
+    fontSize: 20,
+    color: COLORS.text || '#343A40',
+    fontWeight: '700',
+  },
+  searchBarWrapper: {
+    flex: 1,
+  },
 });

@@ -3,9 +3,22 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { styles } from './styles';
 import { ProductCardProps } from './types';
 
-export function ProductCard({ product, onPress }: ProductCardProps) {
+export function ProductCard({ product, onPress, rank }: ProductCardProps) {
   // 가격 포맷 (예: 1,000)
   const formattedPrice = product.pricePer100g.toLocaleString();
+
+  const getRankBadgeStyle = (num: number) => {
+    switch (num) {
+      case 1:
+        return { backgroundColor: '#FCC419' }; // 금메달
+      case 2:
+        return { backgroundColor: '#A8AEC0' }; // 은메달
+      case 3:
+        return { backgroundColor: '#D0B8A0' }; // 동메달
+      default:
+        return { backgroundColor: '#ADB5BD' }; // 4~10위
+    }
+  };
 
   return (
     <TouchableOpacity
@@ -19,6 +32,11 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
           style={styles.image}
           resizeMode="cover"
         />
+        {rank !== undefined && (
+          <View style={[styles.rankBadge, getRankBadgeStyle(rank)]}>
+            <Text style={styles.rankBadgeText}>{rank}위</Text>
+          </View>
+        )}
       </View>
       
       <View style={styles.contentContainer}>
