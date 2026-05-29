@@ -327,30 +327,6 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
         <View style={styles.headerSpacer} />
       </View>
 
-      {/* 심플 필터 정보 바 (우측 정렬 가변 텍스트 드롭다운 버튼) */}
-      <View style={styles.filterInfoBar}>
-        <TouchableOpacity
-          style={styles.filterTriggerButton}
-          onPress={() => {
-            // 모달 오픈 전 임시 상태를 기존 실제 필터 상태로 동기화
-            setTempFilter(activeFilter);
-            setTempStartY(startY);
-            setTempStartM(startM);
-            setTempStartD(startD);
-            setTempEndY(endY);
-            setTempEndM(endM);
-            setTempEndD(endD);
-            setTempDatePicker(activeFilter === 'custom' ? 'start' : null);
-            setCalY(activeFilter === 'custom' ? startY : 2026);
-            setCalM(activeFilter === 'custom' ? startM : 5);
-            setShowFilterModal(true);
-          }}
-        >
-          <Text style={styles.filterTriggerValueText}>{getFilterLabelText()}</Text>
-          <ChevronDownIcon />
-        </TouchableOpacity>
-      </View>
-
       {/* 기간 필터 바텀 시트 */}
       <FilterBottomSheet
         visible={isModalRendering}
@@ -377,6 +353,30 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
       />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* 심플 필터 정보 바 (우측 정렬 가변 텍스트 드롭다운 버튼) */}
+        <View style={styles.filterInfoBar}>
+          <TouchableOpacity
+            style={styles.filterTriggerButton}
+            onPress={() => {
+              // 모달 오픈 전 임시 상태를 기존 실제 필터 상태로 동기화
+              setTempFilter(activeFilter);
+              setTempStartY(startY);
+              setTempStartM(startM);
+              setTempStartD(startD);
+              setTempEndY(endY);
+              setTempEndM(endM);
+              setTempEndD(endD);
+              setTempDatePicker(activeFilter === 'custom' ? 'start' : null);
+              setCalY(activeFilter === 'custom' ? startY : 2026);
+              setCalM(activeFilter === 'custom' ? startM : 5);
+              setShowFilterModal(true);
+            }}
+          >
+            <Text style={styles.filterTriggerValueText}>{getFilterLabelText()}</Text>
+            <ChevronDownIcon />
+          </TouchableOpacity>
+        </View>
+
         {filteredOrders.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>선택한 기간 내 구매한 내역이 없습니다.</Text>
@@ -392,6 +392,7 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
           ))
         )}
       </ScrollView>
+
     </SafeAreaView>
   );
 }
@@ -447,8 +448,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: 0,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
   },
   filterTriggerButton: {
     flexDirection: 'row',
