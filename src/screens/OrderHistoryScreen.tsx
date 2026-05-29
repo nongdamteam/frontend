@@ -5,36 +5,17 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
-  Image,
   Alert,
   ImageSourcePropType,
   Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, Rect } from 'react-native-svg';
-import { colors, radius, shadow, spacing, typography } from '../styles/theme';
+import Svg, { Path } from 'react-native-svg';
+import { colors, radius, spacing, typography } from '../styles/theme';
 import { COLORS } from '../theme/colors';
 import { cartImages } from '../data/cartImages';
-
-interface OrderItem {
-  id: string;
-  title: string;
-  option: string;
-  quantity: number;
-  price: number;
-  image: ImageSourcePropType | string;
-}
-
-interface OrderGroup {
-  orderId: string;
-  orderDate: string;
-  farmName: string;
-  deliveryType: 'early_morning' | 'normal';
-  status: 'completed' | 'shipping' | 'success'; // completed: 배송완료, shipping: 배송중, success: 공구성공
-  items: OrderItem[];
-  totalPrice: number;
-  deliveryFee: number;
-}
+import OrderCard, { OrderGroup } from '../components/orderHistory/OrderCard';
+import FilterBottomSheet from '../components/orderHistory/FilterBottomSheet';
 
 const mockOrders: OrderGroup[] = [
   {
@@ -154,25 +135,17 @@ const FilterIcon = () => (
   </Svg>
 );
 
-const CloseIcon = () => (
-  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <Path d="M18 6L6 18M6 6L18 18" stroke={colors.subtleText} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-  </Svg>
-);
-
 const ChevronDownIcon = () => (
   <Svg width="12" height="12" viewBox="0 0 24 24" fill="none">
     <Path d="M6 9L12 15L18 9" stroke={COLORS.primary} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-function imageSource(image: ImageSourcePropType | string) {
-  return typeof image === 'string' ? { uri: image } : image;
-}
+type FilterType = 'all' | '1month' | '3months' | '6months' | 'custom';
 
 export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
   // 실제 적용 필터 상태
-  const [activeFilter, setActiveFilter] = React.useState<'1month' | '3months' | '6months' | 'all' | 'custom'>('all');
+  const [activeFilter, setActiveFilter] = React.useState<FilterType>('all');
   const [startY, setStartY] = React.useState(2026);
   const [startM, setStartM] = React.useState(1);
   const [startD, setStartD] = React.useState(1);
@@ -206,18 +179,8 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
     }
   }, [showFilterModal]);
 
-  const dimmedOpacity = animValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 0.45],
-  });
-
-  const translateY = animValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [600, 0],
-  });
-
   // 모달 내부 임시 필터 상태
-  const [tempFilter, setTempFilter] = React.useState<'1month' | '3months' | '6months' | 'all' | 'custom'>('all');
+  const [tempFilter, setTempFilter] = React.useState<FilterType>('all');
   const [tempStartY, setTempStartY] = React.useState(2026);
   const [tempStartM, setTempStartM] = React.useState(1);
   const [tempStartD, setTempStartD] = React.useState(1);
@@ -340,45 +303,6 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
     return days;
   }, [calY, calM]);
 
-  const getStatusLabel = (status: OrderGroup['status']) => {
-    switch (status) {
-      case 'shipping':
-        return '배송중';
-      case 'completed':
-        return '배송완료';
-      case 'success':
-        return '공구성공';
-      default:
-        return '';
-    }
-  };
-
-  const getStatusBadgeStyle = (status: OrderGroup['status']) => {
-    switch (status) {
-      case 'shipping':
-        return [styles.statusBadge, styles.shippingBg];
-      case 'completed':
-        return [styles.statusBadge, styles.completedBg];
-      case 'success':
-        return [styles.statusBadge, styles.successBg];
-      default:
-        return styles.statusBadge;
-    }
-  };
-
-  const getStatusTextStyle = (status: OrderGroup['status']) => {
-    switch (status) {
-      case 'shipping':
-        return styles.shippingText;
-      case 'completed':
-        return styles.completedText;
-      case 'success':
-        return styles.successText;
-      default:
-        return styles.statusText;
-    }
-  };
-
   const handleReorder = (itemTitle: string) => {
     Alert.alert('장바구니 담기', `"${itemTitle}" 상품을 장바구니에 다시 담았습니다.`);
   };
@@ -405,7 +329,7 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
           <BackIcon />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>구매내역</Text>
+        <Text style={styles.headerTitle}>주문내역</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -433,152 +357,30 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
         </TouchableOpacity>
       </View>
 
-      {/* 고급 플로팅 팝업 모달 */}
-      {isModalRendering && (
-        <View style={styles.modalOverlay}>
-          {/* 반투명 딤드 터치 시 모달 닫기 */}
-          <TouchableOpacity
-            style={[StyleSheet.absoluteFill, { zIndex: 1 }]}
-            activeOpacity={1}
-            onPress={() => setShowFilterModal(false)}
-          >
-            <Animated.View style={[styles.modalDimmed, { opacity: dimmedOpacity, flex: 1 }]} />
-          </TouchableOpacity>
-
-          <Animated.View style={[styles.modalContent, { transform: [{ translateY }], zIndex: 2 }]}>
-            {/* 모달 헤더 */}
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>기간 설정</Text>
-              <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setShowFilterModal(false)}>
-                <CloseIcon />
-              </TouchableOpacity>
-            </View>
-
-            {/* 1단계: 퀵 필터 칩 */}
-            <View style={styles.quickFilterRow}>
-              {(['all', '1month', '3months', '6months'] as const).map(filter => {
-                const isActive = tempFilter === filter;
-                let label = '';
-                if (filter === 'all') label = '전체';
-                else if (filter === '1month') label = '1개월';
-                else if (filter === '3months') label = '3개월';
-                else if (filter === '6months') label = '6개월';
-
-                return (
-                  <TouchableOpacity
-                    key={filter}
-                    style={[styles.quickChip, isActive && styles.activeQuickChip]}
-                    onPress={() => {
-                      setTempFilter(filter);
-                      setTempDatePicker(null);
-                    }}
-                  >
-                    <Text style={[styles.quickChipText, isActive && styles.activeQuickChipText]}>
-                      {label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-
-              {/* 직접 설정 칩 */}
-              <TouchableOpacity
-                style={[styles.quickChip, tempFilter === 'custom' && styles.activeQuickChip]}
-                onPress={() => {
-                  setTempFilter('custom');
-                  setTempDatePicker('start');
-                  setCalY(tempStartY);
-                  setCalM(tempStartM);
-                }}
-              >
-                <Text style={[styles.quickChipText, tempFilter === 'custom' && styles.activeQuickChipText]}>
-                  직접 설정
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* 2단계: 직접 설정 전용 캘린더 영역 */}
-            {tempFilter === 'custom' && (
-              <View style={styles.modalCalendarSection}>
-                {/* 시작일 / 종료일 선택 탭 */}
-                <View style={styles.modalDateTabs}>
-                  <TouchableOpacity
-                    style={[styles.modalDateTab, tempDatePicker === 'start' && styles.activeModalDateTab]}
-                    onPress={() => handleToggleDatePicker('start')}
-                  >
-                    <Text style={styles.modalDateTabLabel}>시작일</Text>
-                    <Text style={[styles.modalDateTabValue, tempDatePicker === 'start' && styles.activeModalDateTabValue]}>
-                      {`${tempStartY}.${String(tempStartM).padStart(2, '0')}.${String(tempStartD).padStart(2, '0')}`}
-                    </Text>
-                  </TouchableOpacity>
-
-                  <Text style={styles.modalDateTabSpacer}>~</Text>
-
-                  <TouchableOpacity
-                    style={[styles.modalDateTab, tempDatePicker === 'end' && styles.activeModalDateTab]}
-                    onPress={() => handleToggleDatePicker('end')}
-                  >
-                    <Text style={styles.modalDateTabLabel}>종료일</Text>
-                    <Text style={[styles.modalDateTabValue, tempDatePicker === 'end' && styles.activeModalDateTabValue]}>
-                      {`${tempEndY}.${String(tempEndM).padStart(2, '0')}.${String(tempEndD).padStart(2, '0')}`}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* 캘린더 판넬 */}
-                {tempDatePicker && (
-                  <View style={styles.modalCalendarPanel}>
-                    <View style={styles.modalCalendarHeader}>
-                      <TouchableOpacity style={styles.modalMonthNavBtn} onPress={handlePrevMonth}>
-                        <Text style={styles.modalMonthNavText}>‹</Text>
-                      </TouchableOpacity>
-                      <Text style={styles.modalCalendarTitle}>{`${calY}년 ${calM}월`}</Text>
-                      <TouchableOpacity style={styles.modalMonthNavBtn} onPress={handleNextMonth}>
-                        <Text style={styles.modalMonthNavText}>›</Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.modalDayLabelsRow}>
-                      {['일', '월', '화', '수', '목', '금', '토'].map(label => (
-                        <Text key={label} style={styles.modalDayLabelText}>{label}</Text>
-                      ))}
-                    </View>
-
-                    <View style={styles.modalDaysGrid}>
-                      {generateMonthDays.map((day, index) => {
-                        if (day === null) {
-                          return <View key={`empty-${index}`} style={styles.modalEmptyDayCell} />;
-                        }
-
-                        const isSelected =
-                          tempDatePicker === 'start'
-                            ? (calY === tempStartY && calM === tempStartM && day === tempStartD)
-                            : (calY === tempEndY && calM === tempEndM && day === tempEndD);
-
-                        return (
-                          <TouchableOpacity
-                            key={`day-${day}`}
-                            style={[styles.modalDayCell, isSelected && styles.modalSelectedDayCell]}
-                            onPress={() => handleSelectDay(day)}
-                          >
-                            <Text style={[styles.modalDayCellText, isSelected && styles.modalSelectedDayCellText]}>
-                              {day}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  </View>
-                )}
-              </View>
-            )}
-
-            {/* 적용하기 버튼 */}
-            <TouchableOpacity style={styles.applyButton} onPress={handleApplyFilter}>
-              <Text style={styles.applyButtonText}>조회 적용하기</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-      )}
+      {/* 기간 필터 바텀 시트 */}
+      <FilterBottomSheet
+        visible={isModalRendering}
+        animValue={animValue}
+        tempFilter={tempFilter}
+        tempStartY={tempStartY}
+        tempStartM={tempStartM}
+        tempStartD={tempStartD}
+        tempEndY={tempEndY}
+        tempEndM={tempEndM}
+        tempEndD={tempEndD}
+        tempDatePicker={tempDatePicker}
+        calY={calY}
+        calM={calM}
+        generateMonthDays={generateMonthDays}
+        onClose={() => setShowFilterModal(false)}
+        onSetTempFilter={setTempFilter}
+        onSetTempDatePicker={setTempDatePicker}
+        onToggleDatePicker={handleToggleDatePicker}
+        onPrevMonth={handlePrevMonth}
+        onNextMonth={handleNextMonth}
+        onSelectDay={handleSelectDay}
+        onApply={handleApplyFilter}
+      />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {filteredOrders.length === 0 ? (
@@ -587,89 +389,12 @@ export default function OrderHistoryScreen({ onBack }: { onBack: () => void }) {
           </View>
         ) : (
           filteredOrders.map(group => (
-            <View key={group.orderId} style={styles.orderCard}>
-              {/* Card Header (Date & Status) */}
-              <View style={styles.cardHeader}>
-                <View>
-                  <Text style={styles.orderDate}>{group.orderDate}</Text>
-                  <Text style={styles.orderId}>주문번호 {group.orderId}</Text>
-                </View>
-                <View style={getStatusBadgeStyle(group.status)}>
-                  <Text style={getStatusTextStyle(group.status)}>{getStatusLabel(group.status)}</Text>
-                </View>
-              </View>
-
-              <View style={styles.divider} />
-
-              {/* Farm Name Info */}
-              <View style={styles.farmRow}>
-                <Text style={styles.farmName}>{group.farmName}</Text>
-                <View style={[
-                  styles.deliveryBadge,
-                  group.deliveryType === 'early_morning' ? styles.earlyDeliveryBg : styles.normalDeliveryBg
-                ]}>
-                  <Text style={[
-                    styles.deliveryBadgeText,
-                    group.deliveryType === 'early_morning' ? styles.earlyDeliveryText : styles.normalDeliveryText
-                  ]}>
-                    {group.deliveryType === 'early_morning' ? '새벽배송' : '일반배송'}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Items List */}
-              {group.items.map(item => (
-                <View key={item.id} style={styles.itemRow}>
-                  <View style={styles.itemMain}>
-                    <Image
-                      source={imageSource(item.image)}
-                      style={styles.productImage}
-                      resizeMode="cover"
-                    />
-                    <View style={styles.itemDetails}>
-                      <Text style={styles.itemTitle}>{item.title}</Text>
-                      <Text style={styles.itemOption}>{item.option}</Text>
-                      <Text style={styles.itemPrice}>
-                        {item.price.toLocaleString()}원 · {item.quantity}개
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Actions for each item */}
-                  <View style={styles.itemActions}>
-                    <TouchableOpacity
-                      style={styles.subActionButton}
-                      onPress={() => handleReorder(item.title)}
-                    >
-                      <Text style={styles.subActionText}>다시 담기</Text>
-                    </TouchableOpacity>
-                    {group.status === 'completed' && (
-                      <TouchableOpacity
-                        style={[styles.subActionButton, styles.reviewButton]}
-                        onPress={() => handleWriteReview(item.title)}
-                      >
-                        <Text style={[styles.subActionText, styles.reviewButtonText]}>리뷰 작성</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              ))}
-
-              <View style={styles.cardDivider} />
-
-              {/* Total Payment Footer */}
-              <View style={styles.cardFooter}>
-                <Text style={styles.totalLabel}>총 결제금액</Text>
-                <Text style={styles.totalPrice}>
-                  {group.totalPrice.toLocaleString()}원
-                  <Text style={styles.deliveryFeeNote}>
-                    {group.deliveryFee > 0 ? ` (배송비 ${group.deliveryFee.toLocaleString()}원 포함)` : ' (무료배송)'}
-                  </Text>
-                </Text>
-              </View>
-
-
-            </View>
+            <OrderCard
+              key={group.orderId}
+              group={group}
+              onReorder={handleReorder}
+              onWriteReview={handleWriteReview}
+            />
           ))
         )}
       </ScrollView>
@@ -721,226 +446,6 @@ const styles = StyleSheet.create({
     color: colors.mutedText,
     fontWeight: '600',
   },
-
-  // Card 스타일
-  orderCard: {
-    ...shadow.soft,
-    backgroundColor: colors.surface,
-    borderColor: COLORS.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-    padding: spacing.md,
-  },
-  cardHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.sm,
-  },
-  orderDate: {
-    ...typography.title,
-    color: colors.text,
-    fontWeight: '800',
-  },
-  orderId: {
-    ...typography.caption,
-    color: colors.placeholderDark,
-    marginTop: 2,
-    fontWeight: '600',
-  },
-
-  // 배송 상태 배지
-  statusBadge: {
-    borderRadius: radius.xs,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 4,
-  },
-  shippingBg: {
-    backgroundColor: '#E3F2FD',
-  },
-  completedBg: {
-    backgroundColor: '#E8F5E9',
-  },
-  successBg: {
-    backgroundColor: '#FFF3E0',
-  },
-  statusText: {
-    ...typography.badge,
-    fontWeight: '800',
-  },
-  shippingText: {
-    ...typography.badge,
-    color: '#1976D2',
-    fontWeight: '800',
-  },
-  completedText: {
-    ...typography.badge,
-    color: '#388E3C',
-    fontWeight: '800',
-  },
-  successText: {
-    ...typography.badge,
-    color: '#F57C00',
-    fontWeight: '800',
-  },
-
-  divider: {
-    backgroundColor: COLORS.border,
-    height: 1,
-    marginVertical: spacing.sm,
-  },
-
-  // 농가 헤더
-  farmRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginVertical: spacing.xs,
-  },
-  farmName: {
-    ...typography.body,
-    color: colors.text,
-    fontWeight: '700',
-  },
-  deliveryBadge: {
-    borderRadius: radius.xs,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-  },
-  earlyDeliveryBg: {
-    backgroundColor: '#FFF0F1',
-  },
-  normalDeliveryBg: {
-    backgroundColor: '#F2F2F2',
-  },
-  deliveryBadgeText: {
-    ...typography.badge,
-    fontSize: 9,
-    fontWeight: '700',
-  },
-  earlyDeliveryText: {
-    color: COLORS.primary,
-  },
-  normalDeliveryText: {
-    color: colors.mutedText,
-  },
-
-  // 상품 아이템
-  itemRow: {
-    marginTop: spacing.md,
-  },
-  itemMain: {
-    flexDirection: 'row',
-  },
-  productImage: {
-    backgroundColor: '#FAFAF8',
-    borderColor: COLORS.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    height: 64,
-    width: 64,
-  },
-  itemDetails: {
-    flex: 1,
-    marginLeft: spacing.md,
-    justifyContent: 'center',
-  },
-  itemTitle: {
-    ...typography.body,
-    color: colors.text,
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  itemOption: {
-    ...typography.caption,
-    color: colors.mutedText,
-    marginTop: 2,
-    fontWeight: '500',
-  },
-  itemPrice: {
-    ...typography.body,
-    color: colors.text,
-    marginTop: 4,
-    fontWeight: '800',
-    fontSize: 13,
-  },
-
-  // 아이템별 서브 액션 버튼
-  itemActions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    justifyContent: 'flex-end',
-    marginTop: spacing.sm,
-    paddingLeft: 74,
-  },
-  subActionButton: {
-    borderColor: COLORS.border,
-    borderRadius: radius.xs,
-    borderWidth: 1,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-  },
-  subActionText: {
-    ...typography.caption,
-    color: colors.subtleText,
-    fontWeight: '700',
-  },
-  reviewButton: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  reviewButtonText: {
-    color: colors.surface,
-  },
-
-  cardDivider: {
-    backgroundColor: colors.softSurface,
-    height: 1,
-    marginVertical: spacing.md,
-  },
-
-  // 결제 금액 푸터
-  cardFooter: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.xs,
-  },
-  totalLabel: {
-    ...typography.body,
-    color: colors.mutedText,
-    fontWeight: '700',
-  },
-  totalPrice: {
-    ...typography.title,
-    color: colors.text,
-    fontWeight: '800',
-  },
-  deliveryFeeNote: {
-    fontSize: 11,
-    color: colors.placeholderDark,
-    fontWeight: '600',
-  },
-
-  // 메인 액션 버튼 (배송 조회)
-  mainActionButton: {
-    borderColor: COLORS.primary,
-    borderRadius: radius.sm,
-    borderWidth: 1.5,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: spacing.md,
-  },
-  mainActionText: {
-    ...typography.body,
-    color: COLORS.primary,
-    fontWeight: '800',
-  },
-
-  // 심플 필터 정보 바 스타일
   filterInfoBar: {
     backgroundColor: 'transparent',
     flexDirection: 'row',
@@ -961,221 +466,5 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '800',
     fontSize: 13,
-  },
-
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    justifyContent: 'flex-end',
-    zIndex: 999,
-  },
-  modalDimmed: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-  },
-  modalContent: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xl + 8,
-    maxHeight: '85%',
-    ...shadow.soft,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  modalTitle: {
-    ...typography.title,
-    color: colors.text,
-    fontWeight: '800',
-    fontSize: 16,
-  },
-  modalCloseBtn: {
-    padding: spacing.xs,
-  },
-
-  // 1단계: 퀵 필터 칩 스타일
-  quickFilterRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-    flexWrap: 'wrap',
-  },
-  quickChip: {
-    flex: 1,
-    minWidth: 60,
-    height: 38,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: '#FAFAF8',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activeQuickChip: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  quickChipText: {
-    ...typography.caption,
-    color: colors.subtleText,
-    fontWeight: '800',
-  },
-  activeQuickChipText: {
-    color: colors.surface,
-  },
-
-  // 2단계: 직접 설정 영역 스타일
-  modalCalendarSection: {
-    borderTopWidth: 1,
-    borderTopColor: '#F5F5F3',
-    paddingTop: spacing.md,
-    marginBottom: spacing.md,
-  },
-  modalDateTabs: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-  modalDateTab: {
-    flex: 1,
-    backgroundColor: '#FAFAF8',
-    borderColor: COLORS.border,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-  },
-  activeModalDateTab: {
-    borderColor: COLORS.primary,
-    backgroundColor: colors.surface,
-  },
-  modalDateTabLabel: {
-    ...typography.caption,
-    color: colors.placeholderDark,
-    fontWeight: '700',
-    fontSize: 10,
-    marginBottom: 2,
-  },
-  modalDateTabValue: {
-    ...typography.body,
-    color: colors.subtleText,
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  activeModalDateTabValue: {
-    color: COLORS.primary,
-    fontWeight: '800',
-  },
-  modalDateTabSpacer: {
-    ...typography.title,
-    color: colors.placeholderDark,
-    fontWeight: '700',
-  },
-
-  // 캘린더 패널 스타일
-  modalCalendarPanel: {
-    backgroundColor: colors.surface,
-    borderColor: COLORS.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    padding: spacing.md,
-    ...shadow.soft,
-  },
-  modalCalendarHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  modalMonthNavBtn: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    backgroundColor: '#FAFAF8',
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: radius.xs,
-  },
-  modalMonthNavText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.subtleText,
-  },
-  modalCalendarTitle: {
-    ...typography.body,
-    color: colors.text,
-    fontWeight: '800',
-    fontSize: 14,
-  },
-  modalDayLabelsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: spacing.xs,
-    paddingBottom: 4,
-    borderBottomColor: '#F5F5F3',
-    borderBottomWidth: 1,
-  },
-  modalDayLabelText: {
-    ...typography.badge,
-    color: colors.placeholderDark,
-    width: '14.28%',
-    textAlign: 'center',
-    fontWeight: '700',
-  },
-  modalDaysGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    rowGap: spacing.xs,
-  },
-  modalDayCell: {
-    width: '14.28%',
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 20,
-  },
-  modalSelectedDayCell: {
-    backgroundColor: COLORS.primary,
-  },
-  modalDayCellText: {
-    ...typography.caption,
-    color: colors.text,
-    fontWeight: '700',
-  },
-  modalSelectedDayCellText: {
-    color: colors.surface,
-  },
-  modalEmptyDayCell: {
-    width: '14.28%',
-    aspectRatio: 1,
-  },
-
-  // 모달 하단 확정 적용 버튼
-  applyButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: radius.md,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: spacing.sm,
-  },
-  applyButtonText: {
-    ...typography.body,
-    color: colors.surface,
-    fontWeight: '800',
   },
 });
