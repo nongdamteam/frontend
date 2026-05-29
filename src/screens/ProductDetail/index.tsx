@@ -12,13 +12,13 @@ import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { styles } from './styles';
 import { ProductDetailProps, DetailTab } from './types';
 import { cartService } from '@/services/cartService';
-import { navigationService } from '@/services/navigationService';
 
 // 컴포넌트 임포트
 import ImageCarousel from './components/ImageCarousel';
 import PriceComparison from './components/PriceComparison';
 import DetailTabs from './components/DetailTabs';
 import TabContents from './components/TabContents';
+import FarmInfoScreen, { getFarmInfo } from './components/FarmInfoScreen';
 
 export function ProductDetailScreen({
   route,
@@ -26,11 +26,11 @@ export function ProductDetailScreen({
   product: propsProduct,
   entryPoint: propsEntryPoint,
   onBackPress,
-  onCloseModal,
 }: ProductDetailProps) {
   const product = route?.params?.product ?? propsProduct;
   const entryPoint = route?.params?.entryPoint ?? propsEntryPoint ?? 'list';
   const [activeTab, setActiveTab] = useState<DetailTab>('description');
+  const [showFarmInfo, setShowFarmInfo] = useState(false);
   const insets = useSafeAreaInsets();
   const isModal = entryPoint === 'modal';
 
@@ -45,6 +45,7 @@ export function ProductDetailScreen({
   }
 
   const formattedPrice = product.pricePer100g ? product.pricePer100g.toLocaleString() : '0';
+  const farmInfo = getFarmInfo(product);
 
   // 장바구니 담기 핸들러
   const handleAddToCart = () => {
@@ -133,6 +134,17 @@ export function ProductDetailScreen({
 
   const ScrollContainer = (isModal ? BottomSheetScrollView : ScrollView) as any;
 
+  if (showFarmInfo) {
+    return (
+      <FarmInfoScreen
+        insets={insets}
+        isModal={isModal}
+        onBack={() => setShowFarmInfo(false)}
+        product={product}
+      />
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* 커스텀 상단 헤더 (기기 상태바 겹침 방지 여백 적용) */}
@@ -189,8 +201,26 @@ export function ProductDetailScreen({
           </View>
 
           <View style={styles.priceRow}>
-            <Text style={styles.pricePrefix}>100g당</Text>
-            <Text style={styles.priceText}>{formattedPrice}원</Text>
+            <View style={styles.priceLeft}>
+              <Text style={styles.pricePrefix}>100g당</Text>
+              <Text style={styles.priceText}>{formattedPrice}원</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.farmInfoButton}
+              onPress={() => setShowFarmInfo(true)}
+              activeOpacity={0.75}
+            >
+              <View style={styles.farmInfoIcon}>
+                <Text style={styles.farmInfoIconText}>농</Text>
+              </View>
+              <View style={styles.farmInfoTextBox}>
+                <Text style={styles.farmInfoLabel}>판매자 정보</Text>
+                <Text style={styles.farmInfoName} numberOfLines={1}>
+                  {farmInfo.name} ★ {farmInfo.rating.toFixed(1)}
+                </Text>
+              </View>
+              <Text style={styles.farmInfoArrow}>›</Text>
+            </TouchableOpacity>
           </View>
 
           {/* 초록색 가격 변동 비교 분석 상자 */}
