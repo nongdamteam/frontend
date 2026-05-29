@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {
   Image,
   ImageBackground,
@@ -10,12 +10,18 @@ import {
   View,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useNavigation} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
-import FilterButton from '../components/FilterButton';
-import ProductCard, {Product} from '../components/ProductCard';
-import ProductDetailScreen from './ProductDetailScreen';
 import {homeImages} from '../data/homeImages';
 import {colors, radius, shadow, spacing, typography} from '../styles/theme';
+
+import ProductListScreen from '@/screens/ProductList/ProductListScreen';
+import ProductDetailScreen from '@/screens/ProductDetail';
+import RecipeListScreen from '@/screens/RecipeList/RecipeListScreen';
+import {IProduct, SortOption} from '@/screens/ProductList/types';
+import {MOCK_PRODUCTS} from '@/screens/ProductList/hooks/useProducts';
 
 type ScreenMode = 'main' | 'products';
 
@@ -32,7 +38,7 @@ type GroupBuyItem = {
   time: string;
 };
 
-const products: Product[] = [
+const products = [
   {
     id: 'cheorwon-cold',
     title: '철원 최고의 냉이 농장에서 자란 봄동',
@@ -121,32 +127,86 @@ function imageSource(image: ImageSourcePropType | string) {
   return typeof image === 'string' ? {uri: image} : image;
 }
 
+export type HomeStackParamList = {
+  HomeMain: undefined;
+  ProductList: { isGroupPurchaseOnly?: boolean; searchQuery?: string; initialSortOption?: SortOption; isPopularRanking?: boolean } | undefined;
+  Details: { product: IProduct; entryPoint?: 'home' | 'list' };
+  RecipeList: undefined;
+};
+
+const Stack = createNativeStackNavigator<HomeStackParamList>();
+
+const getMockProductById = (id: string): IProduct => {
+  const idMap: Record<string, string> = {
+    'cheorwon-cold': '1',
+    'smart-farm': '2',
+    'seosan': '3',
+    'hongseong': '4',
+    'cheorwon': '1',
+    'haenam': '5',
+    'seosan-cold': '3',
+    'yeosu': '6',
+  };
+
+  const targetId = idMap[id] || '1';
+  const found = MOCK_PRODUCTS.find((p) => p.id === targetId);
+  return found || MOCK_PRODUCTS[0];
+};
+
 function HomeScreen() {
-  const [screenMode, setScreenMode] = useState<ScreenMode>('main');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
-  if (selectedProduct) {
-    return (
-      <ProductDetailScreen
-        onBack={() => setSelectedProduct(null)}
-        product={selectedProduct}
-      />
-    );
-  }
-
-  if (screenMode === 'products') {
-    return (
-      <ProductListScreen
-        onBack={() => setScreenMode('main')}
-        onSelectProduct={setSelectedProduct}
-      />
-    );
-  }
-
-  return <MainHomeScreen onOpenProducts={() => setScreenMode('products')} />;
+  return (
+    <Stack.Navigator
+      initialRouteName="HomeMain"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="HomeMain" component={MainHomeScreen} />
+      <Stack.Screen name="ProductList" component={ProductListScreen} />
+      <Stack.Screen name="Details" component={ProductDetailScreen} />
+      <Stack.Screen name="RecipeList" component={RecipeListScreen} />
+    </Stack.Navigator>
+  );
 }
 
-function MainHomeScreen({onOpenProducts}: {onOpenProducts: () => void}) {
+function MainHomeScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+
+  const handleProductPress = (productId: string) => {
+    const product = getMockProductById(productId);
+    navigation.navigate('Details', { product, entryPoint: 'home' });
+  };
+
+  const handleOpenProducts = () => {
+    navigation.navigate('ProductList');
+  };
+
+  const handleOpenRecipes = () => {
+    navigation.navigate('RecipeList');
+  };
+
+  const handleOpenPopularProducts = () => {
+    navigation.navigate('ProductList', { initialSortOption: 'participants', isPopularRanking: true });
+  };
+
+  const handleOpenGroupPurchase = () => {
+    navigation.navigate('ProductList', { isGroupPurchaseOnly: true });
+  };
+
+  const handleGroupItemPress = (title: string) => {
+    let query = '';
+    if (title.includes('냉이')) {
+      query = '냉이';
+    } else if (title.includes('봄동')) {
+      query = '봄동';
+    } else if (title.includes('방풍나물')) {
+      query = '방풍나물';
+    } else {
+      query = title;
+    }
+    navigation.navigate('ProductList', { isGroupPurchaseOnly: true, searchQuery: query });
+  };
+
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <ScrollView
@@ -155,7 +215,7 @@ function MainHomeScreen({onOpenProducts}: {onOpenProducts: () => void}) {
         <Text style={styles.mainLogo}>농담 🌱</Text>
 
         <Pressable
-          onPress={onOpenProducts}
+          onPress={handleOpenProducts}
           style={({pressed}) => [styles.heroWrapper, pressed && styles.pressed]}>
           <ImageBackground
             imageStyle={styles.heroImageStyle}
@@ -179,12 +239,12 @@ function MainHomeScreen({onOpenProducts}: {onOpenProducts: () => void}) {
           </ImageBackground>
         </Pressable>
 
-        <HomeSection onViewAll={onOpenProducts} title="이런 레시피 어때요?">
+        <HomeSection onViewAll={handleOpenRecipes} title="이런 레시피 어때요?">
           <View style={styles.tileGrid}>
             {recipes.map(recipe => (
               <Pressable
                 key={recipe.id}
-                onPress={onOpenProducts}
+                onPress={handleOpenRecipes}
                 style={({pressed}) => [
                   styles.tileItem,
                   pressed && styles.pressed,
@@ -204,12 +264,12 @@ function MainHomeScreen({onOpenProducts}: {onOpenProducts: () => void}) {
           </View>
         </HomeSection>
 
-        <HomeSection onViewAll={onOpenProducts} title="오늘의 공구">
+        <HomeSection onViewAll={handleOpenGroupPurchase} title="오늘의 공구">
           <View style={styles.tileGrid}>
             {groupBuys.map(item => (
               <Pressable
                 key={item.id}
-                onPress={onOpenProducts}
+                onPress={() => handleGroupItemPress(item.title)}
                 style={({pressed}) => [
                   styles.tileItem,
                   pressed && styles.pressed,
@@ -232,12 +292,12 @@ function MainHomeScreen({onOpenProducts}: {onOpenProducts: () => void}) {
           </View>
         </HomeSection>
 
-        <HomeSection onViewAll={onOpenProducts} title="사람들이 많이 찾는 상품">
+        <HomeSection onViewAll={handleOpenPopularProducts} title="사람들이 많이 찾는 상품">
           <View style={styles.rankGrid}>
             {products.slice(0, 3).map((product, index) => (
               <Pressable
                 key={product.id}
-                onPress={onOpenProducts}
+                onPress={() => handleProductPress(product.id)}
                 style={({pressed}) => [
                   styles.rankItem,
                   pressed && styles.pressed,
@@ -259,42 +319,6 @@ function MainHomeScreen({onOpenProducts}: {onOpenProducts: () => void}) {
             ))}
           </View>
         </HomeSection>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
-
-function ProductListScreen({
-  onBack,
-  onSelectProduct,
-}: {
-  onBack: () => void;
-  onSelectProduct: (product: Product) => void;
-}) {
-  return (
-    <SafeAreaView edges={['top']} style={styles.safeArea}>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}>
-        <Pressable onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backText}>‹ 메인</Text>
-        </Pressable>
-        <View style={styles.header}>
-          <Text style={styles.brand}>농담 🌱</Text>
-          <FilterButton />
-        </View>
-        <View style={styles.listMeta}>
-          <Text style={styles.listCount}>총 {products.length}개 상품</Text>
-        </View>
-        <View style={styles.list}>
-          {products.map(product => (
-            <ProductCard
-              key={product.id}
-              onPress={() => onSelectProduct(product)}
-              product={product}
-            />
-          ))}
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -459,7 +483,7 @@ const styles = StyleSheet.create({
 
   // Timer badge (group buy overlay)
   timeBadgeWrapper: {
-    left: spacing.sm,
+    right: spacing.sm,
     position: 'absolute',
     top: spacing.sm,
   },
