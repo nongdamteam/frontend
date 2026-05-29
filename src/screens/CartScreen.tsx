@@ -7,11 +7,14 @@ import {
   Pressable,
   TouchableOpacity,
   Alert,
+  Image,
+  ImageSourcePropType,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { colors, radius, shadow, spacing, typography } from '../styles/theme';
 import { COLORS } from '../theme/colors';
+import { cartImages } from '../data/cartImages';
 
 interface CartItem {
   id: string;
@@ -29,6 +32,7 @@ interface CartItem {
     message: string;
     show: boolean;
   };
+  image?: ImageSourcePropType | string;
 }
 
 interface Farm {
@@ -73,6 +77,7 @@ const initialItems: CartItem[] = [
       message: '중복 농산물: 봄나물 비빔밥에도 담김',
       show: true,
     },
+    image: cartImages.products.nei,
   },
   {
     id: 'rice_2kg',
@@ -83,6 +88,7 @@ const initialItems: CartItem[] = [
     unitPrice: 9800,
     quantity: 1,
     checked: true,
+    image: cartImages.products.rice,
   },
   {
     id: 'mushroom_200g',
@@ -93,6 +99,7 @@ const initialItems: CartItem[] = [
     unitPrice: 6300,
     quantity: 1,
     checked: true,
+    image: cartImages.products.mushroom,
   },
   {
     id: 'bomdong_1',
@@ -105,6 +112,7 @@ const initialItems: CartItem[] = [
     quantity: 1,
     checked: true,
     priceChangedNote: '수확량 감소로 담을 때보다 300원 올랐습니다.',
+    image: cartImages.products.bomdong,
   },
   {
     id: 'sebal_200g',
@@ -116,8 +124,13 @@ const initialItems: CartItem[] = [
     quantity: 1,
     checked: false,
     isSoldOut: true,
+    image: cartImages.products.sebal,
   },
 ];
+
+function imageSource(image: ImageSourcePropType | string) {
+  return typeof image === 'string' ? {uri: image} : image;
+}
 
 export default function CartScreen() {
   const [items, setItems] = useState<CartItem[]>(initialItems);
@@ -130,7 +143,7 @@ export default function CartScreen() {
   );
 
   const LocationIcon = () => (
-    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <Path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill={COLORS.primary} />
     </Svg>
   );
@@ -423,12 +436,22 @@ export default function CartScreen() {
                       <CheckIcon checked={item.checked} disabled={item.isSoldOut} />
                     </Pressable>
 
-                    {/* Image Placeholder */}
-                    <View style={[styles.imagePlaceholder, item.isSoldOut && styles.imagePlaceholderDisabled]}>
-                      <Text style={[styles.imagePlaceholderText, item.isSoldOut && styles.imagePlaceholderTextDisabled]}>
-                        IMG{'\n'}{item.title.split(' ')[1]}
-                      </Text>
-                    </View>
+                    {/* Product Image */}
+                    {item.image ? (
+                      <View style={[styles.imageContainer, item.isSoldOut && styles.imageDisabled]}>
+                        <Image
+                          source={imageSource(item.image)}
+                          style={styles.productImage}
+                          resizeMode="cover"
+                        />
+                      </View>
+                    ) : (
+                      <View style={[styles.imagePlaceholder, item.isSoldOut && styles.imagePlaceholderDisabled]}>
+                        <Text style={[styles.imagePlaceholderText, item.isSoldOut && styles.imagePlaceholderTextDisabled]}>
+                          IMG{'\n'}{item.title.split(' ')[1]}
+                        </Text>
+                      </View>
+                    )}
 
                     {/* Product Details */}
                     <View style={styles.itemDetails}>
@@ -802,6 +825,22 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     textAlign: 'center',
     lineHeight: 14,
+  },
+  imageContainer: {
+    height: 74,
+    width: 74,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    backgroundColor: '#FAFAF8',
+  },
+  productImage: {
+    height: 74,
+    width: 74,
+  },
+  imageDisabled: {
+    opacity: 0.4,
   },
   imagePlaceholderTextDisabled: {
     color: colors.placeholderDark,
