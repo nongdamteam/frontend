@@ -8,6 +8,7 @@ import {
   draftStorageKey,
   failurePolicyOptions,
   initialProductForm,
+  mockGroupBuyingCampaigns,
   productStatusOptions,
   quickLinks,
   sidebarItems,
@@ -18,12 +19,18 @@ import type {
   CertificationMarkId,
   DeliveryMethod,
   FailurePolicy,
+  GroupBuyingCampaign,
   ProductForm,
   ProductStatus,
   SalesMethod,
   SectionId,
 } from './productRegistrationConfig'
 import nongdamLogo from './assets/nongdam-logo.svg'
+import { ActiveGroupBuyingPage } from './ActiveGroupBuyingPage'
+import {
+  prependStoredGroupBuyingCampaign,
+  readStoredGroupBuyingCampaigns,
+} from './groupBuyingCampaignStorage'
 
 type FeedbackTone = 'info' | 'success' | 'error'
 
@@ -56,6 +63,7 @@ type MediaItem = {
 }
 
 type SidebarItem = (typeof sidebarItems)[number]
+type ActiveView = 'registration' | 'activeGroupBuys'
 
 let mediaIdSequence = 0
 
@@ -83,6 +91,48 @@ function readDraft(): ProductForm {
     }
   } catch {
     return initialProductForm
+  }
+}
+
+function toNumber(value: string) {
+  const parsedValue = Number(value)
+  return Number.isFinite(parsedValue) ? parsedValue : 0
+}
+
+function createCampaignId() {
+  return `saved-groupbuy-${globalThis.crypto?.randomUUID?.() ?? Date.now()}`
+}
+
+function createGroupBuyingCampaignFromForm(
+  form: ProductForm,
+  thumbnail?: string,
+): GroupBuyingCampaign {
+  return {
+    id: createCampaignId(),
+    source: 'saved',
+    status: '모집중',
+    productName: form.name.trim(),
+    category: form.category,
+    origin: form.origin.trim(),
+    producerName: form.farmName.trim() || '농담 판매자',
+    certificationMarkIds: form.certificationMarkIds,
+    regularPrice: toNumber(form.price),
+    groupBuyingPrice: toNumber(form.groupBuyingPrice),
+    surplusQuantity: toNumber(form.surplusQuantity),
+    portionUnit: form.portionUnit.trim(),
+    minimumOrderQuantity: toNumber(form.minimumOrderQuantity),
+    maximumOrderQuantity: toNumber(form.maximumOrderQuantity),
+    currentOrderQuantity: 0,
+    orderCount: 0,
+    recruitEndDate: form.recruitEndDate,
+    groupShippingDate: form.groupShippingDate,
+    purchaseLimit: toNumber(form.purchaseLimit),
+    failurePolicy: form.failurePolicy,
+    deliveryMethod: form.deliveryMethod,
+    deliveryFee: toNumber(form.shippingFee),
+    thumbnail,
+    createdAt: new Date().toISOString(),
+    description: form.description.trim(),
   }
 }
 
@@ -209,21 +259,11 @@ function SidebarIcon({ name }: { name: SidebarItem['icon'] }) {
 
 function Sidebar({
   activeItem,
-  onSelectMode,
+  onSelectItem,
 }: {
-  activeItem: '상품 등록' | '공동구매 등록'
-  onSelectMode: (value: SalesMethod) => void
+  activeItem: string
+  onSelectItem: (item: string) => void
 }) {
-  const handleMenuClick = (item: string) => {
-    if (item === '상품 등록') {
-      onSelectMode('일반판매')
-    }
-
-    if (item === '공동구매 등록') {
-      onSelectMode('잔여수확 공동구매')
-    }
-  }
-
   return (
     <aside className="side-panel" aria-label="상품 관리 메뉴">
       <div className="side-profile-card">
@@ -246,7 +286,7 @@ function Sidebar({
             key={item.label}
             className={item.label === activeItem ? 'side-nav__item is-active' : 'side-nav__item'}
             aria-current={item.label === activeItem ? 'page' : undefined}
-            onClick={() => handleMenuClick(item.label)}
+            onClick={() => onSelectItem(item.label)}
           >
             <SidebarIcon name={item.icon} />
             <span>{item.label}</span>
@@ -283,13 +323,15 @@ function QuickRail() {
 }
 
 function PageHeader({
+  title,
   feedback,
-  isGroupBuying,
+  showRegistrationActions,
   isSidebarCollapsed,
   onToggleSidebar,
 }: {
+  title: string
   feedback: Feedback
-  isGroupBuying: boolean
+  showRegistrationActions: boolean
   isSidebarCollapsed: boolean
   onToggleSidebar: () => void
 }) {
@@ -314,21 +356,29 @@ function PageHeader({
 
       <div className="page-header__main">
         <div className="page-title-row">
-          <h1>{isGroupBuying ? '공동구매 등록' : '상품 등록'}</h1>
-          <span className="required-guide">
-            <RequiredDot />
-            필수항목
-          </span>
+          <h1>{title}</h1>
+          {showRegistrationActions && (
+            <span className="required-guide">
+              <RequiredDot />
+              필수항목
+            </span>
+          )}
         </div>
 
-        <div className="page-actions">
-          <button type="button" className="guide-button guide-button--muted">
-            {isGroupBuying ? '수확 잔량 계산 가이드' : '상품 등록 가이드'}
-          </button>
-          <button type="button" className="guide-button guide-button--accent">
-            {isGroupBuying ? '공동구매 운영 가이드' : '상품 운영 가이드'}
-          </button>
-        </div>
+        {showRegistrationActions && (
+          <div className="page-actions">
+            <button type="button" className="guide-button guide-button--muted">
+              {title === '공동구매 등록'
+                ? '수확 잔량 계산 가이드'
+                : '상품 등록 가이드'}
+            </button>
+            <button type="button" className="guide-button guide-button--accent">
+              {title === '공동구매 등록'
+                ? '공동구매 운영 가이드'
+                : '상품 운영 가이드'}
+            </button>
+          </div>
+        )}
       </div>
 
       <span className={`feedback feedback--${feedback.tone}`} role="status">
@@ -507,6 +557,10 @@ function MediaPreviewTile({
 
 function ProductRegistrationPage() {
   const [form, setForm] = useState<ProductForm>(readDraft)
+  const [activeView, setActiveView] = useState<ActiveView>('registration')
+  const [storedGroupBuyingCampaigns, setStoredGroupBuyingCampaigns] = useState<
+    GroupBuyingCampaign[]
+  >(readStoredGroupBuyingCampaigns)
   const objectUrls = useRef<Set<string>>(new Set())
   const [openSections, setOpenSections] = useState(defaultOpenSections)
   const [categoryMode, setCategoryMode] = useState<CategoryMode>('search')
@@ -544,6 +598,18 @@ function ProductRegistrationPage() {
         : '배송비 미입력'
 
   const isGroupBuying = form.salesMethod === '잔여수확 공동구매'
+  const activeSidebarItem =
+    activeView === 'activeGroupBuys'
+      ? '진행중 공동구매'
+      : isGroupBuying
+        ? '공동구매 등록'
+        : '상품 등록'
+  const pageTitle =
+    activeView === 'activeGroupBuys'
+      ? '진행 중 공동구매'
+      : isGroupBuying
+        ? '공동구매 등록'
+        : '상품 등록'
 
   const formattedGroupBuyingPrice = form.groupBuyingPrice
     ? `${Number(form.groupBuyingPrice).toLocaleString('ko-KR')}원`
@@ -560,6 +626,10 @@ function ProductRegistrationPage() {
   const mediaSummary = representativeImage
     ? `대표 1개 · 추가 ${additionalImages.length}/9`
     : `대표 미등록 · 추가 ${additionalImages.length}/9`
+  const activeGroupBuyingCampaigns = useMemo(
+    () => [...storedGroupBuyingCampaigns, ...mockGroupBuyingCampaigns],
+    [storedGroupBuyingCampaigns],
+  )
 
   useEffect(() => {
     const objectUrlSet = objectUrls.current
@@ -631,6 +701,35 @@ function ProductRegistrationPage() {
         value === '잔여수확 공동구매'
           ? '공동구매 조건을 추가로 입력하세요.'
           : '일반 상품 등록으로 전환했습니다.',
+    })
+  }
+
+  const handleSidebarSelect = (item: string) => {
+    if (item === '상품 등록') {
+      setActiveView('registration')
+      handleChangeSalesMethod('일반판매')
+      return
+    }
+
+    if (item === '공동구매 등록') {
+      setActiveView('registration')
+      handleChangeSalesMethod('잔여수확 공동구매')
+      return
+    }
+
+    if (item === '진행중 공동구매') {
+      setStoredGroupBuyingCampaigns(readStoredGroupBuyingCampaigns())
+      setActiveView('activeGroupBuys')
+      setFeedback({
+        tone: 'info',
+        text: '진행 중인 공동구매 모집 현황을 확인합니다.',
+      })
+      return
+    }
+
+    setFeedback({
+      tone: 'info',
+      text: `${item} 기능은 MVP 범위 밖입니다.`,
     })
   }
 
@@ -712,12 +811,27 @@ function ProductRegistrationPage() {
       return
     }
 
+    if (isGroupBuying) {
+      const nextCampaign = createGroupBuyingCampaignFromForm(
+        form,
+        representativeImage.url,
+      )
+      prependStoredGroupBuyingCampaign(nextCampaign)
+      setStoredGroupBuyingCampaigns((currentCampaigns) => [
+        nextCampaign,
+        ...currentCampaigns,
+      ])
+      setActiveView('activeGroupBuys')
+      setShowPreview(false)
+    } else {
+      setShowPreview(true)
+    }
+
     localStorage.removeItem(draftStorageKey)
-    setShowPreview(true)
     setFeedback({
       tone: 'success',
       text: isGroupBuying
-        ? '공동구매 등록 정보가 저장되었습니다.'
+        ? '공동구매가 저장되어 진행 중 공동구매에 추가되었습니다.'
         : '상품 등록 정보가 저장되었습니다.',
     })
   }
@@ -733,19 +847,23 @@ function ProductRegistrationPage() {
         }
       >
         <Sidebar
-          activeItem={isGroupBuying ? '공동구매 등록' : '상품 등록'}
-          onSelectMode={handleChangeSalesMethod}
+          activeItem={activeSidebarItem}
+          onSelectItem={handleSidebarSelect}
         />
         <main className="product-workspace">
           <PageHeader
+            title={pageTitle}
             feedback={feedback}
-            isGroupBuying={isGroupBuying}
+            showRegistrationActions={activeView === 'registration'}
             isSidebarCollapsed={isSidebarCollapsed}
             onToggleSidebar={() =>
               setIsSidebarCollapsed((currentValue) => !currentValue)
             }
           />
 
+          {activeView === 'activeGroupBuys' ? (
+            <ActiveGroupBuyingPage campaigns={activeGroupBuyingCampaigns} />
+          ) : (
           <form className="product-form" onSubmit={handleSubmit}>
             <div className="form-stack">
               <FormSection
@@ -1488,6 +1606,7 @@ function ProductRegistrationPage() {
               </div>
             </div>
           </form>
+          )}
         </main>
         <QuickRail />
       </div>
