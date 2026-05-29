@@ -17,6 +17,7 @@ export function payloadToFeedItem(
     keyword: t.keyword,
     label: t.label,
     averagePrice: t.averagePrice,
+    thumbnailUrl: t.thumbnailUrl,
     x: t.x,
     y: t.y,
   }));

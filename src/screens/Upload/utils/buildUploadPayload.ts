@@ -20,6 +20,7 @@ export function buildUploadPayload(draft: UploadDraft): UploadPayload {
       keyword: t.keyword,
       label: t.label,
       averagePrice: t.averagePrice,
+      thumbnailUrl: t.thumbnailUrl,
       x: t.position!.x,
       y: t.position!.y,
     })),

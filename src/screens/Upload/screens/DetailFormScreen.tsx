@@ -63,10 +63,7 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
       id: createTempId('tag'),
       keyword: product.keyword,
       label: product.name,
-      thumbnailUrl:
-        typeof product.thumbnailUrl === 'string'
-          ? product.thumbnailUrl
-          : undefined,
+      thumbnailUrl: product.thumbnailUrl,
       averagePrice: product.pricePerUnit,
       position: null,
     });

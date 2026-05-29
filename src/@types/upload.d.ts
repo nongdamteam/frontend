@@ -1,4 +1,4 @@
-import { MediaType } from './feed';
+import { MediaSource, MediaType } from './feed';
 
 /**
  * 업로드 플로우의 현재 단계.
@@ -44,8 +44,8 @@ export interface PendingTag {
   keyword: string;
   /** 라벨에 표시할 상품명 */
   label: string;
-  /** 라벨 썸네일 (검색 결과에서 가져옴) */
-  thumbnailUrl?: string;
+  /** 라벨 썸네일 (검색 결과에서 가져옴, URL 또는 require된 로컬 자산) */
+  thumbnailUrl?: MediaSource;
   /** 평균 가격 (라벨 표시용) */
   averagePrice: number;
   /** 위치 미지정 시 null */
@@ -86,6 +86,7 @@ export interface UploadPayload {
     keyword: string;
     label: string;
     averagePrice: number;
+    thumbnailUrl?: MediaSource;
     x: number;
     y: number;
   }>;
