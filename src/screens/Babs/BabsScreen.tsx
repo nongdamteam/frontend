@@ -22,14 +22,19 @@ interface BabsScreenProps {
   onSwipeLeft?: () => void;
   /** 우측 스와이프 시 호출 (이전 탭으로 이동) */
   onSwipeRight?: () => void;
+  /** 스와이프 진행 중일 때 부모에게 translationX 값을 전달 */
+  onSwipeProgress?: (translationX: number) => void;
+  /** 스와이프가 끝났을 때 부모에게 전달 */
+  onSwipeEnd?: (translationX: number, velocityX: number) => void;
 }
 
-export function BabsScreen({ onSwipeLeft, onSwipeRight }: BabsScreenProps) {
+export function BabsScreen({ onSwipeLeft, onSwipeRight, onSwipeProgress, onSwipeEnd }: BabsScreenProps) {
   const { data, isLoading, isError } = useBabsFeed();
   const { activeIndex, viewabilityConfigCallbackPairs } = useActiveVideoIndex(0);
   const sheetRef = useRef<ProductSheetRef>(null);
 
   const handleTagPress = useCallback((tag: FeedTag) => {
+    console.log('[BabsScreen] handleTagPress tag.keyword:', tag.keyword);
     sheetRef.current?.open(tag.keyword);
   }, []);
 
@@ -68,13 +73,27 @@ export function BabsScreen({ onSwipeLeft, onSwipeRight }: BabsScreenProps) {
   const swipeGesture = Gesture.Pan()
     .activeOffsetX([-20, 20])
     .failOffsetY([-15, 15])
+    .onUpdate(event => {
+      'worklet';
+      if (onSwipeProgress) {
+        runOnJS(onSwipeProgress)(event.translationX);
+      }
+    })
     .onEnd(event => {
       'worklet';
+      if (onSwipeEnd) return;
+
       const SWIPE_THRESHOLD = 50;
       if (event.translationX < -SWIPE_THRESHOLD && onSwipeLeft) {
         runOnJS(onSwipeLeft)();
       } else if (event.translationX > SWIPE_THRESHOLD && onSwipeRight) {
         runOnJS(onSwipeRight)();
+      }
+    })
+    .onFinalize(event => {
+      'worklet';
+      if (onSwipeEnd) {
+        runOnJS(onSwipeEnd)(event.translationX, event.velocityX);
       }
     });
 
