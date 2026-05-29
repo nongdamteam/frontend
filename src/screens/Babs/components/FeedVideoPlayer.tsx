@@ -12,7 +12,7 @@ export function FeedVideoPlayer({ uri, posterUri, paused }: FeedVideoPlayerProps
   const ref = useRef<VideoRef>(null);
 
   return (
-    <View style={StyleSheet.absoluteFill}>
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <Video
         ref={ref}
         source={{ uri }}

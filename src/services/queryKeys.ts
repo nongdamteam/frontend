@@ -9,4 +9,5 @@ export const queryKeys = {
   productsByKeyword: (keyword: string, sort: ProductSortType) =>
     ['products', keyword, sort] as const,
   productDetail: (id: string) => ['product', id] as const,
+  productSearch: (query: string) => ['products', 'search', query] as const,
 };

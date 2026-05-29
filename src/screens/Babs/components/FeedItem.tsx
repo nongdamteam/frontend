@@ -13,6 +13,7 @@ import { SCREEN, SPACING, TAB_BAR_HEIGHT } from '@/constants/layout';
 import { FeedVideoPlayer } from './FeedVideoPlayer';
 import { FeedImageViewer } from './FeedImageViewer';
 import { TagOverlay } from './TagOverlay';
+import { VideoTagStrip } from './VideoTagStrip';
 import { FeedSideActions } from './FeedSideActions';
 
 interface FeedItemProps {
@@ -56,13 +57,23 @@ export function FeedItem({ item, isActive, onTagPress }: FeedItemProps) {
         )}
       </Pressable>
 
-      <TagOverlay
-        tags={item.tags}
-        visible={showOverlay}
-        containerWidth={size.width}
-        containerHeight={size.height}
-        onTagPress={tag => onTagPress?.(tag)}
-      />
+      {/* 이미지: 콘텐츠 위 절대 좌표 핀 / 영상: 하단 가로 strip */}
+      {isVideo ? (
+        <VideoTagStrip
+          tags={item.tags}
+          visible={showOverlay}
+          onTagPress={tag => onTagPress?.(tag)}
+          bottomOffset={insets.bottom + TAB_BAR_HEIGHT}
+        />
+      ) : (
+        <TagOverlay
+          tags={item.tags}
+          visible={showOverlay}
+          containerWidth={size.width}
+          containerHeight={size.height}
+          onTagPress={tag => onTagPress?.(tag)}
+        />
+      )}
 
       {/* 좌하단 캡션 */}
       <View
