@@ -467,17 +467,17 @@ function SegmentedControl<T extends string>({
   onChange,
 }: SegmentedControlProps<T>) {
   return (
-    <div className="segmented-control">
+    <div className="segmented-control" role="group" aria-label={name}>
       {options.map((option) => (
-        <label key={option.value}>
-          <input
-            type="radio"
-            name={name}
-            checked={value === option.value}
-            onChange={() => onChange(option.value)}
-          />
-          <span>{option.label}</span>
-        </label>
+        <button
+          type="button"
+          key={option.value}
+          className={value === option.value ? 'is-active' : undefined}
+          aria-pressed={value === option.value}
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+        </button>
       ))}
     </div>
   )
@@ -660,6 +660,42 @@ function ProductRegistrationPage() {
     objectUrls.current.delete(item.url)
   }
 
+  const clearRegisteredMedia = () => {
+    if (representativeImage) {
+      revokeMediaItem(representativeImage)
+    }
+
+    additionalImages.forEach(revokeMediaItem)
+
+    if (productVideo) {
+      revokeMediaItem(productVideo)
+    }
+
+    setRepresentativeImage(null)
+    setAdditionalImages([])
+    setProductVideo(null)
+  }
+
+  const resetRegistrationForm = (salesMethod: SalesMethod) => {
+    clearRegisteredMedia()
+    localStorage.removeItem(draftStorageKey)
+    setForm({
+      ...initialProductForm,
+      salesMethod,
+    })
+    setCategoryKeyword('')
+    setCategoryMode('search')
+    setUseTemplate(false)
+    setShowPreview(false)
+    setOpenSections(
+      new Set(
+        salesMethod === '잔여수확 공동구매'
+          ? defaultOpenSections
+          : [...defaultOpenSections].filter((section) => section !== 'groupBuy'),
+      ),
+    )
+  }
+
   const toggleSection = (sectionId: SectionId) => {
     setOpenSections((currentSections) => {
       const nextSections = new Set(currentSections)
@@ -685,35 +721,24 @@ function ProductRegistrationPage() {
     })
   }
 
-  const handleChangeSalesMethod = (value: SalesMethod) => {
-    updateField('salesMethod', value)
-    setOpenSections((currentSections) => {
-      const nextSections = new Set(currentSections)
-      nextSections.add('sales')
-      if (value === '잔여수확 공동구매') {
-        nextSections.add('groupBuy')
-      }
-      return nextSections
-    })
-    setFeedback({
-      tone: 'info',
-      text:
-        value === '잔여수확 공동구매'
-          ? '공동구매 조건을 추가로 입력하세요.'
-          : '일반 상품 등록으로 전환했습니다.',
-    })
-  }
-
   const handleSidebarSelect = (item: string) => {
     if (item === '상품 등록') {
       setActiveView('registration')
-      handleChangeSalesMethod('일반판매')
+      resetRegistrationForm('일반판매')
+      setFeedback({
+        tone: 'info',
+        text: '새 상품 등록을 시작합니다.',
+      })
       return
     }
 
     if (item === '공동구매 등록') {
       setActiveView('registration')
-      handleChangeSalesMethod('잔여수확 공동구매')
+      resetRegistrationForm('잔여수확 공동구매')
+      setFeedback({
+        tone: 'info',
+        text: '새 공동구매 등록을 시작합니다.',
+      })
       return
     }
 
