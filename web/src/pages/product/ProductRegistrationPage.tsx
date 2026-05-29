@@ -581,13 +581,15 @@ function MediaPreviewTile({
 
 function ProductRegistrationPage({
   initialMode = '일반판매',
+  initialActiveView = 'registration',
   onNavigate,
 }: {
   initialMode?: SalesMethod
+  initialActiveView?: ActiveView
   onNavigate?: (view: AppView) => void
 }) {
   const [form, setForm] = useState<ProductForm>(readDraft)
-  const [activeView, setActiveView] = useState<ActiveView>('registration')
+  const [activeView, setActiveView] = useState<ActiveView>(initialActiveView)
   const [storedGroupBuyingCampaigns, setStoredGroupBuyingCampaigns] = useState<
     GroupBuyingCampaign[]
   >(readStoredGroupBuyingCampaigns)
@@ -682,6 +684,10 @@ function ProductRegistrationPage({
       }
     })
   }, [initialMode])
+
+  useEffect(() => {
+    setActiveView(initialActiveView)
+  }, [initialActiveView])
 
   const updateField = <Field extends keyof ProductForm>(
     field: Field,

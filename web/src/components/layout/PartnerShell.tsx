@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+﻿import type { ReactNode } from 'react'
 import { quickLinks, sidebarItems, topNavigationItems } from '../../config/productRegistrationConfig'
 import type { AppView } from '../../app/appTypes'
 import nongdamLogo from '../../assets/nongdam-logo.svg'
@@ -10,6 +10,7 @@ type PartnerShellProps = {
   children: ReactNode
   onNavigate?: (view: AppView) => void
   onSidebarAction?: (label: SidebarItem['label']) => void
+  isSidebarCollapsed?: boolean
 }
 
 function SidebarIcon({ name }: { name: SidebarItem['icon'] }) {
@@ -99,7 +100,13 @@ function SidebarIcon({ name }: { name: SidebarItem['icon'] }) {
   )
 }
 
-export function PartnerShell({ activeSidebarItem, children, onNavigate, onSidebarAction }: PartnerShellProps) {
+export function PartnerShell({
+  activeSidebarItem,
+  children,
+  onNavigate,
+  onSidebarAction,
+  isSidebarCollapsed = false,
+}: PartnerShellProps) {
   const handleTopNavigation = (item: string) => {
     if (item === '상품관리') {
       onNavigate?.('product-register')
@@ -127,6 +134,10 @@ export function PartnerShell({ activeSidebarItem, children, onNavigate, onSideba
 
     if (label === '상품 조회/수정') {
       onNavigate?.('product-inquiry')
+    }
+
+    if (label === '진행중 공동구매') {
+      onNavigate?.('group-buy-progress')
     }
 
     if (label === '상점 정보') {
@@ -160,7 +171,7 @@ export function PartnerShell({ activeSidebarItem, children, onNavigate, onSideba
         </div>
       </header>
 
-      <div className="commerce-body">
+      <div className={isSidebarCollapsed ? 'commerce-body is-sidebar-collapsed' : 'commerce-body'}>
         <aside className="side-panel" aria-label="상품 관리 메뉴">
           <div className="side-profile-card">
             <div className="side-profile-card__avatar" aria-hidden="true">
