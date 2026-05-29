@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { IProduct, SortOption, IFilterState } from '../types';
 
-const MOCK_PRODUCTS: IProduct[] = [
+export const MOCK_PRODUCTS: IProduct[] = [
   {
     id: '1',
     title: '철원 최고의 냉이 농장에서 자란 봄동',
@@ -359,10 +359,10 @@ const MOCK_PRODUCTS: IProduct[] = [
 
 const ITEMS_PER_PAGE = 10;
 
-export function useProducts() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState<SortOption>('none');
-  const [isGroupPurchaseOnly, setIsGroupPurchaseOnly] = useState(false);
+export function useProducts(initialSearchQuery?: string, initialGroupPurchaseOnly?: boolean, initialSortOption?: SortOption) {
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery || '');
+  const [sortOption, setSortOption] = useState<SortOption>(initialSortOption || 'none');
+  const [isGroupPurchaseOnly, setIsGroupPurchaseOnly] = useState(initialGroupPurchaseOnly || false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
