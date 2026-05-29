@@ -70,7 +70,6 @@ export function ProductListScreen() {
     <View style={styles.container}>
       <BackHeader
         center={<SearchBar value={searchQuery} onChangeText={setSearchQuery} />}
-        onBack={() => navigation.goBack()}
       />
 
       {/* 상품 목록 리스트 */}

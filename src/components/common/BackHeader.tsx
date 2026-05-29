@@ -14,18 +14,24 @@ type BackHeaderProps = {
 export default function BackHeader({ title, center, right, onBack }: BackHeaderProps) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const canGoBack = typeof navigation.canGoBack === 'function' ? navigation.canGoBack() : false;
+  const showBackButton = Boolean(onBack) || canGoBack;
 
   const handleBack = () => {
     if (onBack) return onBack();
     // @ts-ignore
-    navigation.goBack();
+    if (canGoBack) navigation.goBack();
   };
 
   return (
     <View style={[styles.header, { paddingTop: insets.top, height: 52 + insets.top }]}>
-      <TouchableOpacity style={styles.headerButton} onPress={handleBack} activeOpacity={0.7}>
-        <Text style={styles.headerButtonText}>←</Text>
-      </TouchableOpacity>
+      {showBackButton ? (
+        <TouchableOpacity style={styles.headerButton} onPress={handleBack} activeOpacity={0.7}>
+          <Text style={styles.headerButtonText}>←</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.headerButton} />
+      )}
 
       {center ? (
         <View style={styles.centerWrapper}>{center}</View>
