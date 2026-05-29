@@ -137,6 +137,7 @@ export const initialProductForm: ProductForm = {
 }
 
 export const topNavigationItems = [
+  '상점 정보',
   '상품관리',
   '공동구매',
   '주문관리',
@@ -144,6 +145,7 @@ export const topNavigationItems = [
 ]
 
 export const sidebarItems = [
+  { label: '상점 정보', icon: 'store' },
   { label: '상품 등록', icon: 'product' },
   { label: '공동구매 등록', icon: 'groupBuy' },
   { label: '상품 조회/수정', icon: 'inventory' },

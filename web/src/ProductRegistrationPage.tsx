@@ -31,6 +31,8 @@ import {
   prependStoredGroupBuyingCampaign,
   readStoredGroupBuyingCampaigns,
 } from './groupBuyingCampaignStorage'
+import type { AppView } from './appTypes'
+import { appendCommerceProduct } from './data/commerceDummyData'
 
 type FeedbackTone = 'info' | 'success' | 'error'
 
@@ -145,7 +147,7 @@ function RequiredDot() {
   )
 }
 
-function GlobalHeader() {
+function GlobalHeader({ onNavigate }: { onNavigate?: (view: AppView) => void }) {
   return (
     <header className="global-header">
       <div className="global-header__brand">
@@ -154,7 +156,21 @@ function GlobalHeader() {
       </div>
       <nav className="global-nav" aria-label="상단 메뉴">
         {topNavigationItems.map((item) => (
-          <button type="button" key={item}>
+          <button
+            type="button"
+            key={item}
+            onClick={() => {
+              if (item === '상점 정보') {
+                onNavigate?.('store-info')
+              }
+              if (item === '상품관리') {
+                onNavigate?.('product-register')
+              }
+              if (item === '공동구매') {
+                onNavigate?.('group-buy-register')
+              }
+            }}
+          >
             {item}
           </button>
         ))}
@@ -251,6 +267,14 @@ function SidebarIcon({ name }: { name: SidebarItem['icon'] }) {
           <path d="m5.6 5.6 1.4 1.4" />
           <path d="m17 7 1.4-1.4" />
           <path d="m5.6 18.4 1.4-1.4" />
+        </>
+      )}
+      {name === 'store' && (
+        <>
+          <path d="M5 10.5h14" />
+          <path d="M6 10.5V19h12v-8.5" />
+          <path d="M4.5 10.5 6 5h12l1.5 5.5" />
+          <path d="M8.2 14h7.6" />
         </>
       )}
     </svg>
@@ -555,7 +579,13 @@ function MediaPreviewTile({
   )
 }
 
-function ProductRegistrationPage() {
+function ProductRegistrationPage({
+  initialMode = '일반판매',
+  onNavigate,
+}: {
+  initialMode?: SalesMethod
+  onNavigate?: (view: AppView) => void
+}) {
   const [form, setForm] = useState<ProductForm>(readDraft)
   const [activeView, setActiveView] = useState<ActiveView>('registration')
   const [storedGroupBuyingCampaigns, setStoredGroupBuyingCampaigns] = useState<
@@ -639,6 +669,19 @@ function ProductRegistrationPage() {
       objectUrlSet.clear()
     }
   }, [])
+
+  useEffect(() => {
+    setForm((currentForm) => {
+      if (currentForm.salesMethod === initialMode) {
+        return currentForm
+      }
+
+      return {
+        ...currentForm,
+        salesMethod: initialMode,
+      }
+    })
+  }, [initialMode])
 
   const updateField = <Field extends keyof ProductForm>(
     field: Field,
@@ -752,6 +795,24 @@ function ProductRegistrationPage() {
       return
     }
 
+    if (item === '상점 정보') {
+      onNavigate?.('store-info')
+      setFeedback({
+        tone: 'info',
+        text: '상점 정보 화면으로 이동합니다.',
+      })
+      return
+    }
+
+    if (item === '상품 조회/수정') {
+      onNavigate?.('product-inquiry')
+      setFeedback({
+        tone: 'info',
+        text: '상품 조회/수정 화면으로 이동합니다.',
+      })
+      return
+    }
+
     setFeedback({
       tone: 'info',
       text: `${item} 기능은 MVP 범위 밖입니다.`,
@@ -836,6 +897,18 @@ function ProductRegistrationPage() {
       return
     }
 
+    appendCommerceProduct({
+      name: form.name,
+      category: form.category,
+      status: form.status as '판매중' | '판매대기',
+      price: isGroupBuying ? form.groupBuyingPrice || form.price : form.price,
+      stock: form.stock,
+      shippingFee: form.shippingFee,
+      shortDescription: form.description || form.name,
+      detailDescription: form.description || form.name,
+      imageSrc: representativeImage.url,
+    })
+
     if (isGroupBuying) {
       const nextCampaign = createGroupBuyingCampaignFromForm(
         form,
@@ -863,7 +936,7 @@ function ProductRegistrationPage() {
 
   return (
     <div className="commerce-shell">
-      <GlobalHeader />
+      <GlobalHeader onNavigate={onNavigate} />
       <div
         className={
           isSidebarCollapsed
