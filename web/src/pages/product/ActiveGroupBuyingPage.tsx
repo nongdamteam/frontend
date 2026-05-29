@@ -4,7 +4,7 @@ import {
   groupBuyingStatusFilters,
   type GroupBuyingCampaign,
   type GroupBuyingStatus,
-} from './productRegistrationConfig'
+} from '../../config/productRegistrationConfig'
 
 type ActiveGroupBuyingPageProps = {
   campaigns: GroupBuyingCampaign[]

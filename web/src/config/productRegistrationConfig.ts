@@ -1,21 +1,21 @@
-import animalWelfareCertification from './assets/certifications/animal_welfare.jpg'
-import gapCertification from './assets/certifications/gap.jpg'
-import foodMasterCertification from './assets/certifications/grand_master.jpg'
-import liquorQualityCertification from './assets/certifications/granted_alcohol.jpg'
-import haccpCertification from './assets/certifications/haccp.jpg'
-import processedFoodKsCertification from './assets/certifications/ks_food.jpg'
-import lowCarbonCertification from './assets/certifications/low_carbon.jpg'
-import antibioticFreeCertification from './assets/certifications/non_antibiotic.jpg'
-import pesticideFreeCertification from './assets/certifications/non_pesticide.jpg'
-import organicCertification from './assets/certifications/organic.jpg'
-import organicProcessedCertification from './assets/certifications/organic_processed.jpg'
-import geographicalIndicationCertification from './assets/certifications/pgi.jpg'
-import traditionalFoodCertification from './assets/certifications/traditional_food.jpg'
-import onionGroupPurchase from './assets/group-purchase/onion.jpg'
-import persimmonGroupPurchase from './assets/group-purchase/persimmon.jpg'
-import potatoGroupPurchase from './assets/group-purchase/potato.jpg'
-import strawberryGroupPurchase from './assets/group-purchase/strawberry.jpg'
-import tomatoGroupPurchase from './assets/group-purchase/tomato.jpg'
+import animalWelfareCertification from '../assets/certifications/animal_welfare.jpg'
+import gapCertification from '../assets/certifications/gap.jpg'
+import foodMasterCertification from '../assets/certifications/grand_master.jpg'
+import liquorQualityCertification from '../assets/certifications/granted_alcohol.jpg'
+import haccpCertification from '../assets/certifications/haccp.jpg'
+import processedFoodKsCertification from '../assets/certifications/ks_food.jpg'
+import lowCarbonCertification from '../assets/certifications/low_carbon.jpg'
+import antibioticFreeCertification from '../assets/certifications/non_antibiotic.jpg'
+import pesticideFreeCertification from '../assets/certifications/non_pesticide.jpg'
+import organicCertification from '../assets/certifications/organic.jpg'
+import organicProcessedCertification from '../assets/certifications/organic_processed.jpg'
+import geographicalIndicationCertification from '../assets/certifications/pgi.jpg'
+import traditionalFoodCertification from '../assets/certifications/traditional_food.jpg'
+import onionGroupPurchase from '../assets/group-purchase/onion.jpg'
+import persimmonGroupPurchase from '../assets/group-purchase/persimmon.jpg'
+import potatoGroupPurchase from '../assets/group-purchase/potato.jpg'
+import strawberryGroupPurchase from '../assets/group-purchase/strawberry.jpg'
+import tomatoGroupPurchase from '../assets/group-purchase/tomato.jpg'
 
 export type ProductStatus = '판매중' | '판매대기'
 export type DeliveryMethod = '택배배송' | '직접배송' | '예약수령'
@@ -137,6 +137,7 @@ export const initialProductForm: ProductForm = {
 }
 
 export const topNavigationItems = [
+  '상점 정보',
   '상품관리',
   '공동구매',
   '주문관리',
@@ -144,6 +145,7 @@ export const topNavigationItems = [
 ]
 
 export const sidebarItems = [
+  { label: '상점 정보', icon: 'store' },
   { label: '상품 등록', icon: 'product' },
   { label: '공동구매 등록', icon: 'groupBuy' },
   { label: '상품 조회/수정', icon: 'inventory' },
