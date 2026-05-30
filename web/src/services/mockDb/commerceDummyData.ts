@@ -87,7 +87,7 @@ function nextProductId(products: CommerceProduct[]) {
 
 const db = readMockDb()
 
-export const commerceProducts: CommerceProduct[] = db.products
+export const commerceProducts: CommerceProduct[] = [...db.products]
 export const storeProfile: StoreProfile = db.storeProfile
 export const featuredProductId = db.featuredProductId
 
@@ -132,9 +132,58 @@ export function appendCommerceProduct(input: {
   }
 
   writeMockDb(nextDb)
-  commerceProducts.unshift(nextProduct)
+  commerceProducts.splice(0, commerceProducts.length, ...nextDb.products)
 
   return nextProduct
+}
+
+export function updateCommerceProduct(
+  productId: number,
+  input: {
+    name: string
+    category: string
+    status: CommerceProductStatus
+    price: string
+    stock: string
+    shippingFee: string
+    shortDescription: string
+    detailDescription: string
+    imageSrc: string
+  },
+) {
+  const current = readMockDb()
+  const shippingFee = toNumber(input.shippingFee)
+
+  const nextProducts = current.products.map((product) => {
+    if (product.id !== productId) {
+      return product
+    }
+    return {
+      ...product,
+      name: input.name.trim(),
+      category: input.category.trim(),
+      status: input.status,
+      priceText: formatWon(input.price),
+      stockText: `${toNumber(input.stock)}개`,
+      shippingText:
+        shippingFee <= 0
+          ? '일반 택배 / 무료배송'
+          : `일반 택배 / ${shippingFee.toLocaleString('ko-KR')}원`,
+      shortDescription: input.shortDescription.trim(),
+      detailDescription: input.detailDescription.trim(),
+      imageSrc: input.imageSrc,
+    }
+  })
+
+  const nextDb: MockDbSeed = {
+    ...current,
+    products: nextProducts,
+  }
+
+  writeMockDb(nextDb)
+  commerceProducts.splice(0, commerceProducts.length, ...nextProducts)
+
+  return nextProducts.find((product) => product.id === productId) ?? nextProducts[0]
 }
 
 export function resetMockDb() {
@@ -142,5 +191,6 @@ export function resetMockDb() {
     return
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(mockSeed))
+  commerceProducts.splice(0, commerceProducts.length, ...mockSeed.products)
 }
 

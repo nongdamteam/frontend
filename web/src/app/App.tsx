@@ -1,7 +1,7 @@
 ﻿import { useState } from 'react'
 import { ProductInquiryPage } from '../pages/product/ProductInquiryPage'
 import { ProductRegistrationPage } from '../pages/product/ProductRegistrationPage'
-import { ProductDetailPage } from '../pages/product/ProductDetailPage'
+import { ProductReviewManagementPage } from '../pages/product/ProductReviewManagementPage'
 import { ProductEditPage } from '../pages/product/ProductEditPage'
 import { StoreInfoPage } from '../pages/store/StoreInfoPage'
 import { featuredProductId } from '../services/mockDb/commerceDummyData'
@@ -33,7 +33,7 @@ function App() {
   }
 
   if (view === 'product-detail') {
-    return <ProductDetailPage productId={selectedProductId} onNavigate={setView} />
+    return <ProductReviewManagementPage productId={selectedProductId} onNavigate={setView} />
   }
 
   if (view === 'product-edit') {

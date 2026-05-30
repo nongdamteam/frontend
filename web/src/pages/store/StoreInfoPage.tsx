@@ -94,9 +94,7 @@ export function StoreInfoPage({ onNavigate }: StoreInfoPageProps) {
             onClick={() => setIsSidebarCollapsed((current) => !current)}
           >
             <span
-              className={
-                isSidebarCollapsed ? 'chevron chevron--right' : 'chevron chevron--left'
-              }
+              className={isSidebarCollapsed ? 'chevron chevron--right' : 'chevron chevron--left'}
               aria-hidden="true"
             />
           </button>
