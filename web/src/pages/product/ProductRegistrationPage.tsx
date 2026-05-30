@@ -25,7 +25,7 @@ import type {
   SalesMethod,
   SectionId,
 } from '../../config/productRegistrationConfig'
-import nongdamLogo from '../../assets/nongdam-logo.svg'
+const nongdamLogo = '/Nongdam_logo.svg'
 import { ActiveGroupBuyingPage } from './ActiveGroupBuyingPage'
 import {
   prependStoredGroupBuyingCampaign,
@@ -64,6 +64,12 @@ type MediaItem = {
   url: string
 }
 
+type AiPipelineStep = {
+  id: string
+  label: string
+  runningText: string
+}
+
 type SidebarItem = (typeof sidebarItems)[number]
 type ActiveView = 'registration' | 'activeGroupBuys'
 
@@ -79,6 +85,85 @@ const defaultOpenSections = new Set<SectionId>([
   'delivery',
   'detail',
 ])
+
+const aiPipelineSteps: AiPipelineStep[] = [
+  {
+    id: 'validation',
+    label: '입력값 점검',
+    runningText: '입력한 상품 정보를 점검하고 있어요...',
+  },
+  {
+    id: 'normalize',
+    label: '상품 정보 정리',
+    runningText: '상품명, 산지, 수확일, 배송 조건을 정리하고 있어요...',
+  },
+  {
+    id: 'compose',
+    label: '문구 생성',
+    runningText: '판매글 초안을 만들고 있어요...',
+  },
+  {
+    id: 'finalize',
+    label: '최종 다듬기',
+    runningText: '한 줄 소개, 보관 방법, 활용법, 해시태그를 정리하고 있어요...',
+  },
+]
+
+function buildAiSalesCopy(form: ProductForm, selectedCertificationLabels: string[]) {
+  const productName = form.name.trim() || '상품명 미입력'
+  const priceText = form.price
+    ? `${Number(form.price).toLocaleString('ko-KR')}원`
+    : '협의가'
+  const stockText = form.stock ? `${form.stock}개` : '수량 한정'
+  const originText = form.origin.trim() || '국내산'
+  const harvestText = form.harvestDate || '매일 선별 출고'
+  const shippingText =
+    form.shippingFee === '0'
+      ? `${form.deliveryMethod} / 무료배송`
+      : `${form.deliveryMethod} / ${Number(form.shippingFee || '0').toLocaleString('ko-KR')}원`
+  const certText =
+    selectedCertificationLabels.length > 0
+      ? selectedCertificationLabels.join(', ')
+      : '인증 정보 준비 중'
+  const farmText = form.farmName.trim() || '산지 파트너 농가'
+  const introLine =
+    form.description.trim() ||
+    `${originText} 산지에서 선별한 ${productName}입니다. 신선도와 맛을 우선으로 출고합니다.`
+  const usageTip =
+    form.category.includes('채소')
+      ? '세척 후 겉물기를 제거해 냉장 보관하면 신선도를 더 오래 유지할 수 있습니다.'
+      : '직사광선을 피해 서늘한 곳에 보관하고, 개봉 후에는 밀폐 보관을 권장합니다.'
+
+  return [
+    `한 줄 소개`,
+    `${originText} 산지에서 바로 보내드리는 ${productName}, ${introLine}`,
+    ``,
+    `상품 설명`,
+    `${farmText}에서 관리하는 ${productName}입니다.`,
+    `수확/선별 이후 출고까지의 시간을 줄여 신선한 상태로 받아보실 수 있도록 준비합니다.`,
+    `가정식, 업장용 모두 활용하기 좋은 구성으로 균일한 품질을 기준으로 선별합니다.`,
+    ``,
+    `기본 정보`,
+    `- 판매가: ${priceText}`,
+    `- 재고/출고 가능 수량: ${stockText}`,
+    `- 산지: ${originText}`,
+    `- 수확/입고일: ${harvestText}`,
+    `- 인증: ${certText}`,
+    `- 배송: ${shippingText}`,
+    ``,
+    `보관 방법`,
+    `수령 후 즉시 상태를 확인한 뒤, 손질 전후로 구분 보관해 주세요.`,
+    usageTip,
+    `가급적 빠른 시일 내 섭취하면 가장 좋은 식감과 풍미를 느낄 수 있습니다.`,
+    ``,
+    `활용법`,
+    `샐러드, 볶음, 찜, 국/탕 재료 등 다양한 요리에 활용하기 좋습니다.`,
+    `대량 조리 시에도 편하게 사용할 수 있도록 선별 기준과 출고 상태를 일정하게 관리합니다.`,
+    ``,
+    `해시태그`,
+    `#${productName.replace(/\s+/g, '')} #산지직송 #${originText.replace(/\s+/g, '')} #신선농산물 #제철농산물 #농담파트너센터`,
+  ].join('\n')
+}
 
 function readDraft(): ProductForm {
   try {
@@ -644,6 +729,14 @@ function ProductRegistrationPage({
     tone: 'info',
     text: '필수 정보를 입력한 뒤 저장하세요.',
   })
+  const [isAiGenerating, setIsAiGenerating] = useState(false)
+  const [aiCurrentStepIndex, setAiCurrentStepIndex] = useState<number | null>(
+    null,
+  )
+  const [aiCompletedStepIds, setAiCompletedStepIds] = useState<string[]>([])
+  const [aiStatusText, setAiStatusText] = useState('')
+  const [aiGeneratedAt, setAiGeneratedAt] = useState<string | null>(null)
+  const aiRunIdRef = useRef(0)
 
   const filteredCategories = useMemo(() => {
     const keyword = categoryKeyword.trim()
@@ -693,6 +786,27 @@ function ProductRegistrationPage({
     .filter((mark) => form.certificationMarkIds.includes(mark.id))
     .map((mark) => mark.label)
 
+  const aiStepHasValueMap = useMemo(
+    () => ({
+      validation: Boolean(form.name.trim() && form.price && form.stock),
+      normalize: Boolean(form.origin.trim() && form.harvestDate && form.farmName.trim()),
+      compose: Boolean(form.category && form.name.trim() && form.deliveryMethod),
+      finalize: Boolean(form.certificationMarkIds.length > 0 && form.description.trim()),
+    }),
+    [
+      form.category,
+      form.certificationMarkIds.length,
+      form.deliveryMethod,
+      form.description,
+      form.farmName,
+      form.harvestDate,
+      form.name,
+      form.origin,
+      form.price,
+      form.stock,
+    ],
+  )
+
   const mediaSummary = representativeImage
     ? `대표 1개 · 추가 ${additionalImages.length}/9`
     : `대표 미등록 · 추가 ${additionalImages.length}/9`
@@ -708,6 +822,10 @@ function ProductRegistrationPage({
       objectUrlSet.forEach((url) => URL.revokeObjectURL(url))
       objectUrlSet.clear()
     }
+  }, [])
+
+  useEffect(() => () => {
+    aiRunIdRef.current += 1
   }, [])
 
   useEffect(() => {
@@ -822,6 +940,41 @@ function ProductRegistrationPage({
         nextSections.add(sectionId)
       }
       return nextSections
+    })
+  }
+
+  const handleGenerateAiSalesCopy = async () => {
+    const runId = Date.now()
+    aiRunIdRef.current = runId
+    setIsAiGenerating(true)
+    setAiCompletedStepIds([])
+    setAiGeneratedAt(null)
+    setAiCurrentStepIndex(0)
+    setAiStatusText(aiPipelineSteps[0].runningText)
+
+    for (let index = 0; index < aiPipelineSteps.length; index += 1) {
+      if (aiRunIdRef.current !== runId) return
+
+      const step = aiPipelineSteps[index]
+      setAiCurrentStepIndex(index)
+      setAiStatusText(step.runningText)
+
+      await new Promise((resolve) => setTimeout(resolve, 1050))
+      if (aiRunIdRef.current !== runId) return
+
+      setAiCompletedStepIds((current) => [...current, step.id])
+    }
+
+    const generated = buildAiSalesCopy(form, selectedCertificationLabels)
+    updateField('description', generated)
+
+    setIsAiGenerating(false)
+    setAiCurrentStepIndex(null)
+    setAiStatusText('판매글 초안이 생성되었습니다.')
+    setAiGeneratedAt(new Date().toISOString())
+    setFeedback({
+      tone: 'success',
+      text: 'AI 판매글 초안을 생성해 상품 설명에 반영했습니다.',
     })
   }
 
@@ -1680,6 +1833,62 @@ function ProductRegistrationPage({
                 isOpen={openSections.has('detail')}
                 onToggle={toggleSection}
               >
+                <div className="ai-copy-assistant" aria-live="polite">
+                  <div className="ai-copy-assistant__head">
+                    <div>
+                      <h3>AI 판매글 작성 보조</h3>
+                      <p>
+                        입력된 상품 정보를 기반으로 한 줄 소개, 상품 설명, 보관
+                        방법, 활용법, 해시태그 초안을 생성합니다.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="button button--muted"
+                      disabled={isAiGenerating}
+                      onClick={handleGenerateAiSalesCopy}
+                    >
+                      {isAiGenerating ? '생성 중...' : '판매글 초안 생성'}
+                    </button>
+                  </div>
+
+                  <ol className="ai-copy-assistant__pipeline">
+                    {aiPipelineSteps.map((step, index) => {
+                      const isCompleted = aiCompletedStepIds.includes(step.id)
+                      const isCurrent = isAiGenerating && aiCurrentStepIndex === index
+                      const hasValue =
+                        aiStepHasValueMap[
+                          step.id as keyof typeof aiStepHasValueMap
+                        ]
+                      return (
+                        <li
+                          key={step.id}
+                          className={[
+                            'ai-copy-assistant__step',
+                            hasValue ? 'is-valid' : 'is-missing',
+                            isCompleted ? 'is-completed' : '',
+                            isCurrent ? 'is-running' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                        >
+                          <span className="ai-copy-assistant__dot" aria-hidden="true" />
+                          <strong>{step.label}</strong>
+                        </li>
+                      )
+                    })}
+                  </ol>
+
+                  {aiStatusText && (
+                    <p className="ai-copy-assistant__status">{aiStatusText}</p>
+                  )}
+                  {aiGeneratedAt && (
+                    <p className="ai-copy-assistant__timestamp">
+                      최근 생성: {new Date(aiGeneratedAt).toLocaleString('ko-KR')}
+                    </p>
+                  )}
+                </div>
+
                 <FormLine label="간단 설명">
                   <textarea
                     className="text-area"
