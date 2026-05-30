@@ -58,6 +58,11 @@ export type ProductForm = {
   name: string
   price: string
   stock: string
+  purchaseOptions: Array<{
+    label: string
+    price: string
+    stock: string
+  }>
   status: ProductStatus
   salesMethod: SalesMethod
   groupBuyingPrice: string
@@ -115,6 +120,7 @@ export const initialProductForm: ProductForm = {
   name: '',
   price: '',
   stock: '',
+  purchaseOptions: [{ label: '1kg', price: '', stock: '' }],
   status: '판매중',
   salesMethod: '일반판매',
   groupBuyingPrice: '',
