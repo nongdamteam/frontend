@@ -1,5 +1,7 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import { COLORS } from '@/constants/colors';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   container: {
@@ -37,30 +39,34 @@ export const styles = StyleSheet.create({
   // 캐러셀
   carouselContainer: {
     width: '100%',
-    height: 320,
+    height: SCREEN_WIDTH,
     position: 'relative',
     backgroundColor: '#F9F9F9',
   },
   carouselImage: {
-    width: 390, // 화면 너비는 기본 기기 해상도를 감안하되 scale로 유연하게 처리
-    height: '100%',
+    width: SCREEN_WIDTH,
+    height: SCREEN_WIDTH,
   },
   indicatorContainer: {
     position: 'absolute',
     bottom: 16,
     flexDirection: 'row',
     alignSelf: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.25)', // 반투명 캡슐 배경으로 닷 시인성 확보
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 10,
   },
   indicatorDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    marginHorizontal: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    marginHorizontal: 3.5,
   },
   activeIndicatorDot: {
-    backgroundColor: COLORS.badgeText, // 골드/황토색 인디케이터 (두 번째 이미지 참고)
-    width: 16, // 활성화 시 넓어짐
+    backgroundColor: '#FFFFFF', // 인스타그램 스타일의 흰색 강조 닷
+    width: 14, // 타원형 확장
   },
   // 정보 뷰
   infoSection: {
@@ -94,10 +100,9 @@ export const styles = StyleSheet.create({
   },
   priceRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 8,
+    alignItems: 'baseline',
+    gap: 4,
+    marginBottom: 14,
   },
   priceLeft: {
     alignItems: 'baseline',
@@ -115,54 +120,34 @@ export const styles = StyleSheet.create({
     color: COLORS.text,
   },
   farmInfoButton: {
-    alignItems: 'center',
-    backgroundColor: '#F7FBF5',
-    borderColor: '#D9E9D4',
-    borderRadius: 8,
-    borderWidth: 1,
-    flex: 1,
     flexDirection: 'row',
-    gap: 7,
-    maxWidth: 168,
-    minHeight: 42,
-    paddingLeft: 8,
-    paddingRight: 7,
-    paddingVertical: 7,
-  },
-  farmInfoIcon: {
     alignItems: 'center',
-    backgroundColor: '#E3F2DE',
-    borderRadius: 13,
-    height: 26,
-    justifyContent: 'center',
-    width: 26,
-  },
-  farmInfoIconText: {
-    color: '#2E5A27',
-    fontSize: 12,
-    fontWeight: '900',
-  },
-  farmInfoTextBox: {
-    flex: 1,
-    minWidth: 0,
+    paddingVertical: 11,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+    marginBottom: 2,
+    gap: 6,
   },
   farmInfoLabel: {
-    color: '#6E8B66',
-    fontSize: 9,
-    fontWeight: '800',
-    lineHeight: 12,
+    fontSize: 12,
+    color: COLORS.textLight,
+    fontWeight: '500',
   },
   farmInfoName: {
-    color: '#2E5A27',
-    fontSize: 11,
-    fontWeight: '900',
-    lineHeight: 14,
-    maxWidth: '100%',
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.text,
+    flex: 1,
+  },
+  farmInfoRating: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4A8C45',
   },
   farmInfoArrow: {
-    color: '#7EA575',
-    fontSize: 17,
-    fontWeight: '900',
+    color: COLORS.textLight,
+    fontSize: 16,
+    fontWeight: '400',
     lineHeight: 18,
   },
   // 초록색 가격 변동 비교 상자

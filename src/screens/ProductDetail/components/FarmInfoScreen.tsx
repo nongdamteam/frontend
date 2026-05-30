@@ -11,6 +11,7 @@ import {
 import { EdgeInsets } from 'react-native-safe-area-context';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { COLORS } from '@/constants/colors';
+import ArrowLeftIcon from '@/assets/icons/ArrowLeftIcon';
 
 type FarmProduct = {
   id: string;
@@ -344,7 +345,7 @@ export default function FarmInfoScreen({
         ]}
       >
         <TouchableOpacity style={styles.headerButton} onPress={onBack} activeOpacity={0.7}>
-          <Text style={styles.headerButtonText}>←</Text>
+          <ArrowLeftIcon color={COLORS.text} size={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>농가 정보</Text>
         <View style={styles.headerButton} />

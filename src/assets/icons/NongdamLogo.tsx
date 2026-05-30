@@ -106,7 +106,7 @@ export const NongdamLogo: React.FC<NongdamLogoProps> = ({
     return (
       <Image
         source={logo1}
-        style={[{ width: defaultWidth, height: defaultHeight }, style]}
+        style={[{ width: defaultWidth, height: defaultHeight }, style as any]}
         resizeMode="contain"
       />
     );
@@ -118,7 +118,7 @@ export const NongdamLogo: React.FC<NongdamLogoProps> = ({
   return (
     <Image
       source={logo1}
-      style={[{ width: defaultWidth, height: defaultHeight }, style]}
+      style={[{ width: defaultWidth, height: defaultHeight }, style as any]}
       resizeMode="contain"
     />
   );

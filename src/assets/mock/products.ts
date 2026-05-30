@@ -20,7 +20,11 @@ export const PRODUCTS_MOCK: ProductDetail[] = [
       { id: 'minQuantity', label: '최소 500g' },
       { id: 'gap', label: 'GAP 인증' },
     ],
-    images: [require('@/assets/images/products/prod_001.png')],
+    images: [
+      require('@/assets/images/products/prod_001.png'),
+      'https://images.unsplash.com/photo-1628773822503-930a8589c017?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1587334206506-697678d49127?w=800&auto=format&fit=crop&q=80',
+    ],
     priceHistoryNote: '5일 전에는 100g당 1,500원이었어요!',
   },
   {
@@ -38,7 +42,11 @@ export const PRODUCTS_MOCK: ProductDetail[] = [
       { id: 'minQuantity', label: '최소 500g' },
       { id: 'gap', label: 'GAP 인증' },
     ],
-    images: [require('@/assets/images/products/prod_002.png')],
+    images: [
+      require('@/assets/images/products/prod_002.png'),
+      'https://images.unsplash.com/photo-1604085792782-8d92f276d7d8?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1550147760-44c9966d6bc7?w=800&auto=format&fit=crop&q=80',
+    ],
     priceHistoryNote: '5일 전에는 100g당 1,500원이었어요!',
   },
   {
@@ -55,7 +63,11 @@ export const PRODUCTS_MOCK: ProductDetail[] = [
       { id: 'groupbuy', label: '공구 진행중' },
       { id: 'minQuantity', label: '최소 500g' },
     ],
-    images: [require('@/assets/images/products/prod_003.png')],
+    images: [
+      require('@/assets/images/products/prod_003.png'),
+      require('@/assets/images/bomdong_fresh.png'),
+      'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800&auto=format&fit=crop&q=80',
+    ],
   },
   {
     id: 'prod-004',
@@ -68,7 +80,11 @@ export const PRODUCTS_MOCK: ProductDetail[] = [
     reviewCount: 210,
     distanceKm: 18.3,
     badges: [{ id: 'groupbuy', label: '공구 진행중' }],
-    images: [require('@/assets/images/products/prod_004.png')],
+    images: [
+      require('@/assets/images/products/prod_004.png'),
+      require('@/assets/images/bomdong_fresh.png'),
+      'https://images.unsplash.com/photo-1604085792782-8d92f276d7d8?w=800&auto=format&fit=crop&q=80',
+    ],
   },
   {
     id: 'prod-101',
@@ -81,7 +97,11 @@ export const PRODUCTS_MOCK: ProductDetail[] = [
     reviewCount: 312,
     distanceKm: 3.2,
     badges: [{ id: 'gap', label: 'HACCP' }],
-    images: [require('@/assets/images/products/prod_101.png')],
+    images: [
+      require('@/assets/images/products/prod_101.png'),
+      'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1471193945509-9ad0617afabf?w=800&auto=format&fit=crop&q=80',
+    ],
   },
   {
     id: 'prod-201',
@@ -94,6 +114,10 @@ export const PRODUCTS_MOCK: ProductDetail[] = [
     reviewCount: 158,
     distanceKm: 8.5,
     badges: [{ id: 'traditional', label: '전통식품인증' }],
-    images: [require('@/assets/images/products/prod_201.png')],
+    images: [
+      require('@/assets/images/products/prod_201.png'),
+      'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1618414503926-2eed7b3c25b6?w=800&auto=format&fit=crop&q=80',
+    ],
   },
 ];

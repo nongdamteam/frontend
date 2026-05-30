@@ -108,4 +108,26 @@ export const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#FFFFFF',
   },
+  timeBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: '#FFCCD5', // 옅은 분홍색 배경
+    paddingHorizontal: 4,
+    paddingVertical: 2.5,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0.8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
+  },
+  timeBadgeText: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#D4494B', // primary 레드 색상
+    letterSpacing: -0.2,
+  },
 });

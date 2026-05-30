@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '@/constants/colors';
+import ArrowLeftIcon from '@/assets/icons/ArrowLeftIcon';
 
 type BackHeaderProps = {
   title?: string;
@@ -27,7 +28,7 @@ export default function BackHeader({ title, center, right, onBack }: BackHeaderP
     <View style={[styles.header, { paddingTop: insets.top, height: 52 + insets.top }]}>
       {showBackButton ? (
         <TouchableOpacity style={styles.headerButton} onPress={handleBack} activeOpacity={0.7}>
-          <Text style={styles.headerButtonText}>←</Text>
+          <ArrowLeftIcon color={COLORS?.text || '#222222'} size={24} />
         </TouchableOpacity>
       ) : (
         <View style={styles.headerButton} />

@@ -10,6 +10,8 @@ export interface IProduct {
   participantsCount: number;     // 공구 참여자 수
   image: ImageSourcePropType;    // 상품 이미지 소스
   images?: any[];                // 상품 상세 캐러셀 이미지 배열
+  timeRemaining?: string;        // 남은 시간 표시
+  timeInSeconds?: number;        // 남은 초 단위 시간
 }
 
 export type SortOption = 'distance' | 'price' | 'participants' | 'none';

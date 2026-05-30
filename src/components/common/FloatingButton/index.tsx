@@ -14,6 +14,8 @@ export function FloatingButton({
   accessibilityLabel,
   style,
 }: FloatingButtonProps) {
+  const baseOpacity = (style as any)?.opacity ?? 1;
+
   return (
     <Pressable
       onPress={onPress}
@@ -27,7 +29,7 @@ export function FloatingButton({
           backgroundColor: COLORS[background],
           alignItems: 'center',
           justifyContent: 'center',
-          opacity: pressed ? 0.85 : 1,
+          opacity: pressed ? baseOpacity * 0.85 : baseOpacity,
         },
         SHADOW.floating,
         style,

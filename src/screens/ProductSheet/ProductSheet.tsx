@@ -45,7 +45,7 @@ export const ProductSheet = forwardRef<ProductSheetRef>((_props, ref) => {
     setKeyword('');
   }, []);
 
-  const snapPoints = useMemo(() => ['72%', '85%'], []);
+  const snapPoints = useMemo(() => ['70%', '70%'], []);
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -115,7 +115,7 @@ function ProductListModalWrapper({
     return PRODUCTS_MOCK.map((prod) => {
       const rawImage = prod.thumbnailUrl ?? prod.images?.[0] ?? require('@/assets/images/bomdong_fresh.png');
       const image = typeof rawImage === 'string' ? { uri: rawImage } : rawImage;
-      
+
       const rawImages = prod.images && prod.images.length > 0 ? prod.images : [rawImage];
       const images = rawImages.map(img => typeof img === 'string' ? { uri: img } : img);
 

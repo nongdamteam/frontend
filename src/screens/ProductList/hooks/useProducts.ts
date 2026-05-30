@@ -1,6 +1,60 @@
 import { useState, useMemo, useEffect } from 'react';
 import { IProduct, SortOption, IFilterState } from '../types';
 
+const BOMDONG_IMAGES_1 = [
+  require('@/assets/images/products/prod_001.png'),
+  'https://images.unsplash.com/photo-1628773822503-930a8589c017?w=800&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1587334206506-697678d49127?w=800&auto=format&fit=crop&q=80',
+];
+
+const BOMDONG_IMAGES_2 = [
+  require('@/assets/images/products/prod_002.png'),
+  'https://images.unsplash.com/photo-1604085792782-8d92f276d7d8?w=800&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1550147760-44c9966d6bc7?w=800&auto=format&fit=crop&q=80',
+];
+
+const BOMDONG_IMAGES_3 = [
+  require('@/assets/images/products/prod_003.png'),
+  require('@/assets/images/bomdong_fresh.png'),
+  'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800&auto=format&fit=crop&q=80',
+];
+
+const BOMDONG_IMAGES_4 = [
+  require('@/assets/images/products/prod_004.png'),
+  require('@/assets/images/bomdong_fresh.png'),
+  'https://images.unsplash.com/photo-1604085792782-8d92f276d7d8?w=800&auto=format&fit=crop&q=80',
+];
+
+const NAENGI_IMAGES_1 = [
+  require('@/assets/images/products/prod_naengi_1.png'),
+  require('@/assets/images/products/prod_naengi_2.png'),
+  require('@/assets/images/tags/naengi.png'),
+];
+
+const NAENGI_IMAGES_2 = [
+  require('@/assets/images/products/prod_naengi_2.png'),
+  require('@/assets/images/products/prod_naengi_1.png'),
+  require('@/assets/images/tags/naengi.png'),
+];
+
+const BANGPUNG_IMAGES = [
+  require('@/assets/images/products/prod_bangpung_1.png'),
+  require('@/assets/images/products/prod_bangpung_2.png'),
+  require('@/assets/images/feed/eco_vegetables.png'),
+];
+
+const SESAME_IMAGES = [
+  require('@/assets/images/products/prod_101.png'),
+  'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=800&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1471193945509-9ad0617afabf?w=800&auto=format&fit=crop&q=80',
+];
+
+const KOCHUJANG_IMAGES = [
+  require('@/assets/images/products/prod_201.png'),
+  'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=800&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1618414503926-2eed7b3c25b6?w=800&auto=format&fit=crop&q=80',
+];
+
 export const MOCK_PRODUCTS: IProduct[] = [
   {
     id: '1',
@@ -10,7 +64,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 0.8,
     participantsCount: 25,
-    image: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=500&auto=format&fit=crop&q=80',
+    image: BOMDONG_IMAGES_1[0],
+    images: BOMDONG_IMAGES_1,
+    timeRemaining: '08:10:02 남음',
+    timeInSeconds: 29402,
   },
   {
     id: '2',
@@ -20,7 +77,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 1.5,
     participantsCount: 8,
-    image: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=500&auto=format&fit=crop&q=80',
+    image: BOMDONG_IMAGES_2[0],
+    images: BOMDONG_IMAGES_2,
+    timeRemaining: '05:30:15 남음',
+    timeInSeconds: 19815,
   },
   {
     id: '3',
@@ -30,7 +90,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 2.3,
     participantsCount: 12,
-    image: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=500&auto=format&fit=crop&q=80',
+    image: BOMDONG_IMAGES_3[0],
+    images: BOMDONG_IMAGES_3,
+    timeRemaining: '12:15:00 남음',
+    timeInSeconds: 44100,
   },
   {
     id: '4',
@@ -40,7 +103,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 3.1,
     participantsCount: 5,
-    image: 'https://images.unsplash.com/photo-1550147760-44c9966d6bc7?w=500&auto=format&fit=crop&q=80',
+    image: BOMDONG_IMAGES_4[0],
+    images: BOMDONG_IMAGES_4,
+    timeRemaining: '02:45:10 남음',
+    timeInSeconds: 9910,
   },
   {
     id: '5',
@@ -50,27 +116,34 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: false,
     distance: 4.5,
     participantsCount: 0,
-    image: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=500&auto=format&fit=crop&q=80',
+    image: BOMDONG_IMAGES_1[0],
+    images: BOMDONG_IMAGES_1,
   },
   {
     id: '6',
-    title: '경북 칠곡 봄동 (당도 보장)',
-    pricePer100g: 1300,
-    tags: ['공구 진행중', '최소 300g', '친환경'],
+    title: '여수 돌산 무농약 방풍나물 300g',
+    pricePer100g: 1600,
+    tags: ['공구 진행중', '무농약', '산지직송'],
     isGroupPurchase: true,
     distance: 1.2,
     participantsCount: 19,
-    image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=500&auto=format&fit=crop&q=80',
+    image: BANGPUNG_IMAGES[0],
+    images: BANGPUNG_IMAGES,
+    timeRemaining: '23:59:59 남음',
+    timeInSeconds: 86399,
   },
   {
     id: '7',
-    title: '강원 횡성 맑은골 봄동',
-    pricePer100g: 1050,
-    tags: ['공구 진행중', '최소 500g'],
+    title: '철원 노지 향긋한 냉이 300g',
+    pricePer100g: 1930,
+    tags: ['공구 진행중', '향 진함', '당일 수확'],
     isGroupPurchase: true,
     distance: 5.2,
     participantsCount: 3,
-    image: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=500&auto=format&fit=crop&q=80',
+    image: NAENGI_IMAGES_1[0],
+    images: NAENGI_IMAGES_1,
+    timeRemaining: '01:10:00 남음',
+    timeInSeconds: 4200,
   },
   {
     id: '8',
@@ -80,7 +153,8 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: false,
     distance: 3.8,
     participantsCount: 30,
-    image: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=500&auto=format&fit=crop&q=80',
+    image: BOMDONG_IMAGES_4[0],
+    images: BOMDONG_IMAGES_4,
   },
   {
     id: '9',
@@ -90,17 +164,23 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 0.5,
     participantsCount: 14,
-    image: 'https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?w=500&auto=format&fit=crop&q=80',
+    image: BOMDONG_IMAGES_1[0],
+    images: BOMDONG_IMAGES_1,
+    timeRemaining: '09:05:30 남음',
+    timeInSeconds: 32730,
   },
   {
     id: '10',
-    title: '제주도 구좌읍 노지 봄동',
-    pricePer100g: 1400,
-    tags: ['공구 진행중', '최소 1kg', '제주산'],
+    title: '서산 황토밭 캐낸 생 냉이 300g',
+    pricePer100g: 1800,
+    tags: ['공구 진행중', '인기 폭발', 'GAP 인증'],
     isGroupPurchase: true,
     distance: 8.4,
-    participantsCount: 22,
-    image: 'https://images.unsplash.com/photo-1604085792782-8d92f276d7d8?w=500&auto=format&fit=crop&q=80',
+    participantsCount: 27,
+    image: NAENGI_IMAGES_2[0],
+    images: NAENGI_IMAGES_2,
+    timeRemaining: '18:40:22 남음',
+    timeInSeconds: 67222,
   },
   // 2페이지용 데이터
   {
@@ -111,7 +191,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 6.1,
     participantsCount: 11,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_3[0],
+    images: BOMDONG_IMAGES_3,
+    timeRemaining: '06:15:00 남음',
+    timeInSeconds: 22500,
   },
   {
     id: '12',
@@ -121,7 +204,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 2.7,
     participantsCount: 7,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_4[0],
+    images: BOMDONG_IMAGES_4,
+    timeRemaining: '15:20:00 남음',
+    timeInSeconds: 55200,
   },
   {
     id: '13',
@@ -131,7 +217,8 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: false,
     distance: 4.2,
     participantsCount: 0,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_1[0],
+    images: BOMDONG_IMAGES_1,
   },
   {
     id: '14',
@@ -141,7 +228,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 3.5,
     participantsCount: 16,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_2[0],
+    images: BOMDONG_IMAGES_2,
+    timeRemaining: '04:10:00 남음',
+    timeInSeconds: 15000,
   },
   {
     id: '15',
@@ -151,7 +241,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 1.9,
     participantsCount: 4,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_3[0],
+    images: BOMDONG_IMAGES_3,
+    timeRemaining: '10:50:00 남음',
+    timeInSeconds: 39000,
   },
   {
     id: '16',
@@ -161,7 +254,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 2.1,
     participantsCount: 9,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_4[0],
+    images: BOMDONG_IMAGES_4,
+    timeRemaining: '11:30:00 남음',
+    timeInSeconds: 41400,
   },
   {
     id: '17',
@@ -171,7 +267,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 7.2,
     participantsCount: 13,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_1[0],
+    images: BOMDONG_IMAGES_1,
+    timeRemaining: '07:45:00 남음',
+    timeInSeconds: 27900,
   },
   {
     id: '18',
@@ -181,7 +280,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 0.9,
     participantsCount: 20,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_2[0],
+    images: BOMDONG_IMAGES_2,
+    timeRemaining: '03:15:00 남음',
+    timeInSeconds: 11700,
   },
   {
     id: '19',
@@ -191,7 +293,8 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: false,
     distance: 5.8,
     participantsCount: 0,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_3[0],
+    images: BOMDONG_IMAGES_3,
   },
   {
     id: '20',
@@ -201,7 +304,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 4.8,
     participantsCount: 6,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_4[0],
+    images: BOMDONG_IMAGES_4,
+    timeRemaining: '14:50:00 남음',
+    timeInSeconds: 53400,
   },
   // 3페이지용 데이터
   {
@@ -212,7 +318,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 3.3,
     participantsCount: 10,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_1[0],
+    images: BOMDONG_IMAGES_1,
+    timeRemaining: '08:50:00 남음',
+    timeInSeconds: 31800,
   },
   {
     id: '22',
@@ -222,7 +331,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 1.8,
     participantsCount: 5,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_2[0],
+    images: BOMDONG_IMAGES_2,
+    timeRemaining: '13:10:00 남음',
+    timeInSeconds: 47400,
   },
   {
     id: '23',
@@ -232,7 +344,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 2.5,
     participantsCount: 11,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_3[0],
+    images: BOMDONG_IMAGES_3,
+    timeRemaining: '05:40:00 남음',
+    timeInSeconds: 20400,
   },
   {
     id: '24',
@@ -242,7 +357,8 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: false,
     distance: 6.5,
     participantsCount: 0,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_4[0],
+    images: BOMDONG_IMAGES_4,
   },
   {
     id: '25',
@@ -252,7 +368,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 2.0,
     participantsCount: 17,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_1[0],
+    images: BOMDONG_IMAGES_1,
+    timeRemaining: '19:15:00 남음',
+    timeInSeconds: 69300,
   },
   {
     id: '26',
@@ -262,7 +381,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 9.0,
     participantsCount: 14,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_2[0],
+    images: BOMDONG_IMAGES_2,
+    timeRemaining: '22:30:00 남음',
+    timeInSeconds: 81000,
   },
   {
     id: '27',
@@ -272,7 +394,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 3.9,
     participantsCount: 21,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_3[0],
+    images: BOMDONG_IMAGES_3,
+    timeRemaining: '01:50:00 남음',
+    timeInSeconds: 6600,
   },
   {
     id: '28',
@@ -282,7 +407,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 2.4,
     participantsCount: 2,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_4[0],
+    images: BOMDONG_IMAGES_4,
+    timeRemaining: '16:05:00 남음',
+    timeInSeconds: 57900,
   },
   {
     id: '29',
@@ -292,7 +420,8 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: false,
     distance: 1.3,
     participantsCount: 25,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_1[0],
+    images: BOMDONG_IMAGES_1,
   },
   {
     id: '30',
@@ -302,7 +431,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 4.1,
     participantsCount: 7,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_2[0],
+    images: BOMDONG_IMAGES_2,
+    timeRemaining: '17:25:00 남음',
+    timeInSeconds: 62700,
   },
   // 4페이지용 여분 데이터
   {
@@ -313,7 +445,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 3.0,
     participantsCount: 15,
-    image: require('@/assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_3[0],
+    images: BOMDONG_IMAGES_3,
+    timeRemaining: '20:10:00 남음',
+    timeInSeconds: 72600,
   },
   {
     id: '32',
@@ -323,7 +458,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 5.0,
     participantsCount: 9,
-    image: require('../../../assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_4[0],
+    images: BOMDONG_IMAGES_4,
+    timeRemaining: '11:05:00 남음',
+    timeInSeconds: 39900,
   },
   {
     id: '33',
@@ -333,7 +471,8 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: false,
     distance: 4.7,
     participantsCount: 0,
-    image: require('../../../assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_1[0],
+    images: BOMDONG_IMAGES_1,
   },
   {
     id: '34',
@@ -343,7 +482,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 2.8,
     participantsCount: 6,
-    image: require('../../../assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_2[0],
+    images: BOMDONG_IMAGES_2,
+    timeRemaining: '21:40:00 남음',
+    timeInSeconds: 78000,
   },
   {
     id: '35',
@@ -353,7 +495,10 @@ export const MOCK_PRODUCTS: IProduct[] = [
     isGroupPurchase: true,
     distance: 6.0,
     participantsCount: 12,
-    image: require('../../../assets/images/bomdong_fresh.png'),
+    image: BOMDONG_IMAGES_3[0],
+    images: BOMDONG_IMAGES_3,
+    timeRemaining: '09:20:00 남음',
+    timeInSeconds: 33600,
   },
 ];
 
@@ -394,6 +539,13 @@ export function useProducts(
       result.sort((a, b) => a.pricePer100g - b.pricePer100g);
     } else if (sortOption === 'participants') {
       result.sort((a, b) => b.participantsCount - a.participantsCount);
+    } else if (sortOption === 'none') {
+      // 기본 정렬: 공구 시간이 얼마 남지 않은 순서(임박순)로 정렬
+      result.sort((a, b) => {
+        const aSec = a.timeInSeconds ?? 999999;
+        const bSec = b.timeInSeconds ?? 999999;
+        return aSec - bSec;
+      });
     }
 
     // If caller requested a maximum number of items (e.g., show top 100), slice here

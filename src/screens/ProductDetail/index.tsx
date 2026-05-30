@@ -13,6 +13,11 @@ import { styles } from './styles';
 import { ProductDetailProps, DetailTab } from './types';
 import { cartService } from '@/services/cartService';
 
+import ArrowLeftIcon from '@/assets/icons/ArrowLeftIcon';
+import FireIcon from '@/assets/icons/FireIcon';
+import CartIcon from '@/assets/icons/CartIcon';
+
+
 // 컴포넌트 임포트
 import ImageCarousel from './components/ImageCarousel';
 import PriceComparison from './components/PriceComparison';
@@ -160,10 +165,10 @@ export function ProductDetailScreen({
           }}
           activeOpacity={0.7}
         >
-          <Text style={styles.headerButtonText}>←</Text>
+          <ArrowLeftIcon color="#222222" size={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          {entryPoint === 'home' ? '🏠 홈 특가 상세' : '상품 상세'}
+          {entryPoint === 'home' ? '홈 특가 상세' : '상품 상세'}
         </Text>
         <TouchableOpacity style={styles.headerButton} activeOpacity={0.7}>
           <Text style={[styles.headerButtonText, { fontSize: 16 }]}>공유</Text>
@@ -181,7 +186,9 @@ export function ProductDetailScreen({
         {/* 홈 피드 진입 전용 특별 배너 */}
         {entryPoint === 'home' && (
           <View style={localStyles.specialBanner}>
-            <Text style={localStyles.specialBannerEmoji}>🔥</Text>
+            <View style={localStyles.specialBannerIcon}>
+              <FireIcon size={16} color="#F59F00" />
+            </View>
             <Text style={localStyles.specialBannerText}>
               홈 피드 특별 추천! 공동구매 특가 혜택 적용 상품
             </Text>
@@ -191,7 +198,7 @@ export function ProductDetailScreen({
         {/* 상품 정보 영역 */}
         <View style={styles.infoSection}>
           <Text style={styles.title}>{product.title}</Text>
-          
+
           <View style={styles.badgeRow}>
             {product.tags.map((tag: string, idx: number) => (
               <View key={`detail-tag-${idx}`} style={styles.badge}>
@@ -201,27 +208,22 @@ export function ProductDetailScreen({
           </View>
 
           <View style={styles.priceRow}>
-            <View style={styles.priceLeft}>
-              <Text style={styles.pricePrefix}>100g당</Text>
-              <Text style={styles.priceText}>{formattedPrice}원</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.farmInfoButton}
-              onPress={() => setShowFarmInfo(true)}
-              activeOpacity={0.75}
-            >
-              <View style={styles.farmInfoIcon}>
-                <Text style={styles.farmInfoIconText}>농</Text>
-              </View>
-              <View style={styles.farmInfoTextBox}>
-                <Text style={styles.farmInfoLabel}>판매자 정보</Text>
-                <Text style={styles.farmInfoName} numberOfLines={1}>
-                  {farmInfo.name} ★ {farmInfo.rating.toFixed(1)}
-                </Text>
-              </View>
-              <Text style={styles.farmInfoArrow}>›</Text>
-            </TouchableOpacity>
+            <Text style={styles.pricePrefix}>100g당</Text>
+            <Text style={styles.priceText}>{formattedPrice}원</Text>
           </View>
+
+          <TouchableOpacity
+            style={styles.farmInfoButton}
+            onPress={() => setShowFarmInfo(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.farmInfoLabel}>판매자</Text>
+            <Text style={styles.farmInfoName} numberOfLines={1}>
+              {farmInfo.name}
+            </Text>
+            <Text style={styles.farmInfoRating}>★ {farmInfo.rating.toFixed(1)}</Text>
+            <Text style={styles.farmInfoArrow}>›</Text>
+          </TouchableOpacity>
 
           {/* 초록색 가격 변동 비교 분석 상자 */}
           <PriceComparison currentPrice={product.pricePer100g} />
@@ -246,7 +248,7 @@ export function ProductDetailScreen({
           onPress={handleAddToCart}
           activeOpacity={0.8}
         >
-          <Text style={styles.cartEmoji}>🛒</Text>
+          <CartIcon color="#D4494B" size={24} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -274,9 +276,10 @@ const localStyles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 4,
   },
-  specialBannerEmoji: {
-    fontSize: 16,
+  specialBannerIcon: {
     marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   specialBannerText: {
     fontSize: 12,

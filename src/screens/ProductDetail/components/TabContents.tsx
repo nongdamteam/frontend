@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { styles } from '../styles';
 import { DetailTab } from '../types';
+import AiReviewSummary from './AiReviewSummary';
 
 interface TabContentsProps {
   activeTab: DetailTab;
@@ -35,6 +36,9 @@ export function TabContents({ activeTab, productTitle }: TabContentsProps) {
     case 'reviews':
       return (
         <View style={styles.tabContentContainer}>
+          {/* AI 리뷰 요약 */}
+          <AiReviewSummary />
+
           {/* 리뷰 요약 헤더 */}
           <View style={styles.ratingHeader}>
             <Text style={styles.ratingNumber}>4.8</Text>

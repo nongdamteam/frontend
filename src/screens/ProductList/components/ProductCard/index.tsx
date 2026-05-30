@@ -37,6 +37,11 @@ export function ProductCard({ product, onPress, rank }: ProductCardProps) {
             <Text style={styles.rankBadgeText}>{rank}위</Text>
           </View>
         )}
+        {product.isGroupPurchase && product.timeRemaining && (
+          <View style={styles.timeBadge}>
+            <Text style={styles.timeBadgeText}>{product.timeRemaining}</Text>
+          </View>
+        )}
       </View>
       
       <View style={styles.contentContainer}>
