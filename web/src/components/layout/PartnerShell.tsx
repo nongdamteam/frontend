@@ -119,6 +119,10 @@ export function PartnerShell({
     if (item === '상점 정보') {
       onNavigate?.('store-info')
     }
+
+    if (item === '주문관리') {
+      onNavigate?.('order-management')
+    }
   }
 
   const handleSidebarClick = (label: SidebarItem['label']) => {
@@ -149,6 +153,12 @@ export function PartnerShell({
 
     if (label === '상점 정보') {
       onNavigate?.('store-info')
+      onSidebarAction?.(label)
+      return
+    }
+
+    if (label === '주문 확인') {
+      onNavigate?.('order-management')
       onSidebarAction?.(label)
       return
     }
