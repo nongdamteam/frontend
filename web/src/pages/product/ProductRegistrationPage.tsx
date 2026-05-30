@@ -582,13 +582,34 @@ function MediaPreviewTile({
 function ProductRegistrationPage({
   initialMode = '일반판매',
   initialActiveView = 'registration',
+  pageTitleOverride,
+  sidebarItemOverride,
+  initialFormOverride,
+  initialRepresentativeImageSrc,
+  submitButtonLabel,
+  onSubmitProduct,
+  disableDraftPersistence = false,
   onNavigate,
 }: {
   initialMode?: SalesMethod
   initialActiveView?: ActiveView
+  pageTitleOverride?: string
+  sidebarItemOverride?: string
+  initialFormOverride?: Partial<ProductForm>
+  initialRepresentativeImageSrc?: string
+  submitButtonLabel?: string
+  onSubmitProduct?: (payload: {
+    form: ProductForm
+    representativeImageUrl: string
+    isGroupBuying: boolean
+  }) => void
+  disableDraftPersistence?: boolean
   onNavigate?: (view: AppView) => void
 }) {
-  const [form, setForm] = useState<ProductForm>(readDraft)
+  const [form, setForm] = useState<ProductForm>(() => {
+    const base = disableDraftPersistence ? initialProductForm : readDraft()
+    return { ...base, ...(initialFormOverride ?? {}) }
+  })
   const [activeView, setActiveView] = useState<ActiveView>(initialActiveView)
   const [storedGroupBuyingCampaigns, setStoredGroupBuyingCampaigns] = useState<
     GroupBuyingCampaign[]
@@ -599,7 +620,15 @@ function ProductRegistrationPage({
   const [categoryKeyword, setCategoryKeyword] = useState('')
   const [useTemplate, setUseTemplate] = useState(false)
   const [representativeImage, setRepresentativeImage] =
-    useState<MediaItem | null>(null)
+    useState<MediaItem | null>(
+      initialRepresentativeImageSrc
+        ? {
+            id: 'initial-representative-image',
+            name: '기존 대표 이미지',
+            url: initialRepresentativeImageSrc,
+          }
+        : null,
+    )
   const [additionalImages, setAdditionalImages] = useState<MediaItem[]>([])
   const [productVideo, setProductVideo] = useState<MediaItem | null>(null)
   const [showPreview, setShowPreview] = useState(false)
@@ -636,12 +665,14 @@ function ProductRegistrationPage({
       : isGroupBuying
         ? '공동구매 등록'
         : '상품 등록'
+  const resolvedSidebarItem = sidebarItemOverride ?? activeSidebarItem
   const pageTitle =
     activeView === 'activeGroupBuys'
       ? '진행 중 공동구매'
       : isGroupBuying
         ? '공동구매 등록'
         : '상품 등록'
+  const resolvedPageTitle = pageTitleOverride ?? pageTitle
 
   const formattedGroupBuyingPrice = form.groupBuyingPrice
     ? `${Number(form.groupBuyingPrice).toLocaleString('ko-KR')}원`
@@ -671,6 +702,32 @@ function ProductRegistrationPage({
       objectUrlSet.clear()
     }
   }, [])
+
+  useEffect(() => {
+    if (!initialFormOverride) {
+      return
+    }
+    setForm((currentForm) => ({
+      ...currentForm,
+      ...initialFormOverride,
+    }))
+  }, [initialFormOverride])
+
+  useEffect(() => {
+    if (!initialRepresentativeImageSrc) {
+      return
+    }
+    setRepresentativeImage((currentImage) => {
+      if (currentImage) {
+        return currentImage
+      }
+      return {
+        id: 'initial-representative-image',
+        name: '기존 대표 이미지',
+        url: initialRepresentativeImageSrc,
+      }
+    })
+  }, [initialRepresentativeImageSrc])
 
   useEffect(() => {
     setForm((currentForm) => {
@@ -705,7 +762,9 @@ function ProductRegistrationPage({
   }
 
   const revokeMediaItem = (item: MediaItem) => {
-    URL.revokeObjectURL(item.url)
+    if (item.url.startsWith('blob:')) {
+      URL.revokeObjectURL(item.url)
+    }
     objectUrls.current.delete(item.url)
   }
 
@@ -727,7 +786,9 @@ function ProductRegistrationPage({
 
   const resetRegistrationForm = (salesMethod: SalesMethod) => {
     clearRegisteredMedia()
-    localStorage.removeItem(draftStorageKey)
+    if (!disableDraftPersistence) {
+      localStorage.removeItem(draftStorageKey)
+    }
     setForm({
       ...initialProductForm,
       salesMethod,
@@ -758,6 +819,10 @@ function ProductRegistrationPage({
   }
 
   const saveDraft = () => {
+    if (disableDraftPersistence) {
+      setFeedback({ tone: 'success', text: '수정 입력값이 반영되었습니다.' })
+      return
+    }
     localStorage.setItem(draftStorageKey, JSON.stringify(form))
     setFeedback({ tone: 'success', text: '임시저장되었습니다.' })
   }
@@ -903,17 +968,25 @@ function ProductRegistrationPage({
       return
     }
 
-    appendCommerceProduct({
-      name: form.name,
-      category: form.category,
-      status: form.status as '판매중' | '판매대기',
-      price: isGroupBuying ? form.groupBuyingPrice || form.price : form.price,
-      stock: form.stock,
-      shippingFee: form.shippingFee,
-      shortDescription: form.description || form.name,
-      detailDescription: form.description || form.name,
-      imageSrc: representativeImage.url,
-    })
+    if (onSubmitProduct) {
+      onSubmitProduct({
+        form,
+        representativeImageUrl: representativeImage.url,
+        isGroupBuying,
+      })
+    } else {
+      appendCommerceProduct({
+        name: form.name,
+        category: form.category,
+        status: form.status as '판매중' | '판매대기',
+        price: isGroupBuying ? form.groupBuyingPrice || form.price : form.price,
+        stock: form.stock,
+        shippingFee: form.shippingFee,
+        shortDescription: form.description || form.name,
+        detailDescription: form.description || form.name,
+        imageSrc: representativeImage.url,
+      })
+    }
 
     if (isGroupBuying) {
       const nextCampaign = createGroupBuyingCampaignFromForm(
@@ -931,7 +1004,9 @@ function ProductRegistrationPage({
       setShowPreview(true)
     }
 
-    localStorage.removeItem(draftStorageKey)
+    if (!disableDraftPersistence) {
+      localStorage.removeItem(draftStorageKey)
+    }
     setFeedback({
       tone: 'success',
       text: isGroupBuying
@@ -951,12 +1026,12 @@ function ProductRegistrationPage({
         }
       >
         <Sidebar
-          activeItem={activeSidebarItem}
+          activeItem={resolvedSidebarItem}
           onSelectItem={handleSidebarSelect}
         />
         <main className="product-workspace">
           <PageHeader
-            title={pageTitle}
+            title={resolvedPageTitle}
             feedback={feedback}
             showRegistrationActions={activeView === 'registration'}
             isSidebarCollapsed={isSidebarCollapsed}
@@ -1702,7 +1777,7 @@ function ProductRegistrationPage({
                   임시저장
                 </button>
                 <button type="submit" className="button button--primary">
-                  저장하기
+                  {submitButtonLabel ?? '저장하기'}
                 </button>
                 <button type="button" className="button button--ghost">
                   취소
