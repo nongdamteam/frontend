@@ -56,7 +56,12 @@ function ProductInquiryPage({ onNavigate, onOpenProductDetail, onOpenProductEdit
             aria-pressed={isSidebarCollapsed}
             onClick={() => setIsSidebarCollapsed((current) => !current)}
           >
-            <span className="chevron chevron--left" aria-hidden="true" />
+            <span
+              className={
+                isSidebarCollapsed ? 'chevron chevron--right' : 'chevron chevron--left'
+              }
+              aria-hidden="true"
+            />
           </button>
 
           <div className="page-header__main">

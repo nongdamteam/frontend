@@ -588,7 +588,14 @@ function ProductRegistrationPage({
   initialActiveView?: ActiveView
   onNavigate?: (view: AppView) => void
 }) {
-  const [form, setForm] = useState<ProductForm>(readDraft)
+  const [form, setForm] = useState<ProductForm>(() => {
+    const base = readDraft()
+    if (base.salesMethod === initialMode) return base
+    return {
+      ...base,
+      salesMethod: initialMode,
+    }
+  })
   const [activeView, setActiveView] = useState<ActiveView>(initialActiveView)
   const [storedGroupBuyingCampaigns, setStoredGroupBuyingCampaigns] = useState<
     GroupBuyingCampaign[]
