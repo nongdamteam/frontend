@@ -27,6 +27,7 @@ import {MOCK_PRODUCTS} from '@/screens/ProductList/hooks/useProducts';
 import { navigationService } from '@/services/navigationService';
 import { MOCK_RECIPES } from './RecipeList/RecipeListScreen';
 import RecipeDetailScreen from '@/screens/RecipeDetail/RecipeDetailScreen';
+import { NongdamLogo } from '@/assets/icons/NongdamLogo';
 
 type ScreenMode = 'main' | 'products';
 
@@ -43,69 +44,11 @@ type GroupBuyItem = {
   time: string;
 };
 
-const products = [
-  {
-    id: 'cheorwon-cold',
-    title: '철원 최고의 냉이 농장에서 자란 봄동',
-    badges: ['공구 진행중', '최소 500g', 'GAP 인증'],
-    price: '100g당 1,000원',
-    discountNote: '5월 전에는 100g당 1,500원이었어요!',
-    image: homeImages.products.cheorwonCold,
-  },
-  {
-    id: 'smart-farm',
-    title: '유기농 스마트팜 봄동',
-    badges: ['공구 진행중', '최소 500g', 'GAP 인증'],
-    price: '100g당 1,200원',
-    discountNote: '5월 전에는 100g당 1,500원이었어요!',
-    image: homeImages.products.smartFarm,
-  },
-  {
-    id: 'seosan',
-    title: '충남 서산 봄동',
-    badges: ['공구 진행중', '최소 500g'],
-    price: '100g당 1,100원',
-    discountNote: '5월 전에는 100g당 1,400원이었어요!',
-    image: homeImages.products.seosan,
-  },
-  {
-    id: 'hongseong',
-    title: '신선한 홍성 봄동',
-    badges: ['공구 진행중', '최소 500g'],
-    price: '100g당 980원',
-    discountNote: '5월 전에는 100g당 1,300원이었어요!',
-    image: homeImages.products.hongseong,
-  },
-];
+// 기존의 하드코딩된 groupBuys 배열 제거 (MOCK_PRODUCTS 연동으로 대체)
 
 
 
-const groupBuys: GroupBuyItem[] = [
-  {
-    id: 'cheorwon',
-    title: '철원 냉이',
-    time: '08:10:02 남음',
-    image: homeImages.groupBuys.cheorwon,
-  },
-  {
-    id: 'haenam',
-    title: '해남 봄동',
-    time: '08:10:02 남음',
-    image: homeImages.groupBuys.haenam,
-  },
-  {
-    id: 'seosan-cold',
-    title: '서산 냉이',
-    time: '08:10:02 남음',
-    image: homeImages.groupBuys.seosan,
-  },
-  {
-    id: 'yeosu',
-    title: '여수 방풍나물',
-    time: '08:10:02 남음',
-    image: homeImages.groupBuys.yeosu,
-  },
-];
+// 기존의 하드코딩된 groupBuys 배열 제거 (MOCK_PRODUCTS 연동으로 대체)
 
 function imageSource(image: ImageSourcePropType | string) {
   return typeof image === 'string' ? {uri: image} : image;
@@ -123,14 +66,14 @@ const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 const getMockProductById = (id: string): IProduct => {
   const idMap: Record<string, string> = {
-    'cheorwon-cold': '1',
+    'cheorwon-cold': '7',
     'smart-farm': '2',
+    'yeosu': '6',
+    'seosan-cold': '10',
     'seosan': '3',
     'hongseong': '4',
-    'cheorwon': '1',
+    'cheorwon': '7',
     'haenam': '5',
-    'seosan-cold': '3',
-    'yeosu': '6',
   };
 
   const targetId = idMap[id] || '1';
@@ -210,7 +153,7 @@ function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
     });
 
   const handleProductPress = (productId: string) => {
-    const product = getMockProductById(productId);
+    const product = MOCK_PRODUCTS.find((p) => p.id === productId) || getMockProductById(productId);
     navigation.navigate('Details', { product, entryPoint: 'home' });
   };
 
@@ -230,18 +173,26 @@ function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
     navigation.navigate('ProductList', { isGroupPurchaseOnly: true });
   };
 
-  const handleGroupItemPress = (title: string) => {
-    let query = '';
-    if (title.includes('냉이')) {
-      query = '냉이';
-    } else if (title.includes('봄동')) {
-      query = '봄동';
-    } else if (title.includes('방풍나물')) {
-      query = '방풍나물';
-    } else {
-      query = title;
-    }
-    navigation.navigate('ProductList', { isGroupPurchaseOnly: true, searchQuery: query });
+  const homeGroupBuys = React.useMemo(() => {
+    return MOCK_PRODUCTS
+      .filter((p) => p.isGroupPurchase && p.timeRemaining !== undefined)
+      .sort((a, b) => {
+        const aSec = a.timeInSeconds ?? 999999;
+        const bSec = b.timeInSeconds ?? 999999;
+        return aSec - bSec;
+      })
+      .slice(0, 3);
+  }, []);
+
+  const homePopularProducts = React.useMemo(() => {
+    return [...MOCK_PRODUCTS]
+      .sort((a, b) => b.participantsCount - a.participantsCount)
+      .slice(0, 3);
+  }, []);
+
+  const handleGroupItemPress = (productId: string) => {
+    const product = MOCK_PRODUCTS.find((p) => p.id === productId) || getMockProductById(productId);
+    navigation.navigate('Details', { product, entryPoint: 'home' });
   };
 
   return (
@@ -251,7 +202,9 @@ function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
           ref={scrollViewRef}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}>
-          <Text style={styles.mainLogo}>농담 🌱</Text>
+          <View style={styles.headerLogoWrapper}>
+            <NongdamLogo mode="horizontal" height={40} />
+          </View>
 
           <Pressable
             onPress={handleOpenProducts}
@@ -307,10 +260,10 @@ function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
 
           <HomeSection onViewAll={handleOpenGroupPurchase} title="오늘의 공구">
             <View style={styles.tileGridThree}>
-              {groupBuys.slice(0, 3).map(item => (
+              {homeGroupBuys.map(item => (
                 <Pressable
                   key={item.id}
-                  onPress={() => handleGroupItemPress(item.title)}
+                  onPress={() => handleGroupItemPress(item.id)}
                   style={({pressed}) => [
                     styles.tileItemThree,
                     pressed && styles.pressed,
@@ -322,7 +275,7 @@ function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
                       style={styles.tileImage}
                     />
                     <View style={styles.timeBadgeWrapper}>
-                      <Text style={styles.timeBadge}>{item.time}</Text>
+                      <Text style={styles.timeBadge}>{item.timeRemaining}</Text>
                     </View>
                   </View>
                   <Text numberOfLines={1} style={styles.tileTitle}>
@@ -335,7 +288,7 @@ function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
 
           <HomeSection onViewAll={handleOpenPopularProducts} title="사람들이 많이 찾는 상품">
             <View style={styles.rankGrid}>
-              {products.slice(0, 3).map((product, index) => (
+              {homePopularProducts.map((product, index) => (
                 <Pressable
                   key={product.id}
                   onPress={() => handleProductPress(product.id)}
@@ -346,7 +299,7 @@ function MainHomeScreen({ onSwipeProgress, onSwipeEnd }: MainHomeScreenProps) {
                   <View style={styles.rankImageWrapper}>
                     <Image
                       resizeMode="cover"
-                      source={imageSource(homeImages.ranks[index])}
+                      source={imageSource(product.image)}
                       style={styles.rankImage}
                     />
                     <View style={styles.rankBadgeWrapper}>
@@ -403,6 +356,10 @@ const styles = StyleSheet.create({
   mainLogo: {
     ...typography.brand,
     marginBottom: spacing.xl,
+  },
+  headerLogoWrapper: {
+    marginBottom: spacing.xl,
+    alignSelf: 'flex-start',
   },
 
   // Hero
@@ -599,16 +556,6 @@ const styles = StyleSheet.create({
     opacity: 0.78,
   },
 
-  // Product list screen
-  backButton: {
-    alignSelf: 'flex-start',
-    marginBottom: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  backText: {
-    ...typography.body,
-    color: colors.mutedText,
-  },
   header: {
     alignItems: 'center',
     flexDirection: 'row',

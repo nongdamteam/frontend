@@ -182,6 +182,7 @@ export function BabsScreen({
           position: 'absolute',
           top: insets.top + SPACING.md,
           right: SPACING.lg,
+          opacity: 0.7,
         }}
       />
 

@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import BackButton from '@/components/common/BackButton';
 
 import {Product} from '../components/ProductCard';
 import {colors, radius, shadow, spacing, typography} from '../styles/theme';
@@ -26,9 +27,7 @@ function ProductDetailScreen({onBack, product}: ProductDetailScreenProps) {
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}>
-        <Pressable onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backText}>‹ 홈</Text>
-        </Pressable>
+        <BackButton onPress={onBack} />
 
         <View style={styles.heroImage}>
           <View style={styles.pagination}>
@@ -198,15 +197,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    marginBottom: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  backText: {
-    ...typography.body,
-    color: colors.mutedText,
   },
   heroImage: {
     ...shadow.soft,
