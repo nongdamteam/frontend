@@ -1,4 +1,5 @@
 import { Image, StyleSheet, View } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { SelectedMedia } from '@/@types/upload';
 import { Typography } from '@/components/common/Typography';
 import { COLORS } from '@/constants/colors.local';
@@ -12,8 +13,12 @@ export function MediaPreview({ media }: MediaPreviewProps) {
   if (!media) {
     return (
       <View style={[styles.container, styles.empty]}>
-        <Typography variant="body" color="textMuted">
-          아래에서 미디어를 선택해주세요
+        {/* 이미지 픽토그램 */}
+        <View style={styles.iconWrap}>
+          <Icon name="image-outline" size={48} color={COLORS.primary} />
+        </View>
+        <Typography variant="body" color="textMuted" align="center" style={styles.emptyText}>
+          아래에서 사진 또는 영상을{'\n'}선택해주세요
         </Typography>
       </View>
     );
@@ -41,6 +46,19 @@ const styles = StyleSheet.create({
   empty: {
     alignItems: 'center',
     justifyContent: 'center',
+    gap: SPACING.md,
+  },
+  iconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 24,
+    backgroundColor: '#E8F5E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: 13,
+    lineHeight: 20,
   },
   image: { width: '100%', height: '100%' },
   badge: {

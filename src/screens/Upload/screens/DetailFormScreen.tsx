@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Image, StyleSheet, View } from 'react-native';
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { Alert, Image, StyleSheet, View, ScrollView } from 'react-native';
 import { ProductListItem } from '@/@types/product';
 import { Typography } from '@/components/common/Typography';
 import { COLORS } from '@/constants/colors.local';
@@ -109,7 +108,7 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
         onTrailingPress={handleSubmit}
       />
 
-      <BottomSheetScrollView
+      <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
       >
@@ -158,7 +157,7 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
         >
           업로드 후에도 캡션과 공개 설정은 변경할 수 있어요.
         </Typography>
-      </BottomSheetScrollView>
+      </ScrollView>
 
       <ProductSearchSheet
         ref={searchSheetRef}
@@ -168,6 +167,7 @@ export function DetailFormScreen({ onClose }: DetailFormScreenProps) {
 
       <UploadStatusOverlay
         state={overlayState}
+        mediaType={draft.media?.type}
         errorMessage={(error as Error | undefined)?.message}
       />
     </View>

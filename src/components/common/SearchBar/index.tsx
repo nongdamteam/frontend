@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { styles } from './styles';
 import { COLORS } from '@/constants/colors';
 import { SearchBarProps } from './types';
+import SearchIcon from '@/assets/icons/SearchIcon';
 
 export function SearchBar({
   value,
@@ -12,7 +13,9 @@ export function SearchBar({
 }: SearchBarProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.searchIcon}>🔍</Text>
+      <View style={styles.searchIcon}>
+        <SearchIcon size={18} color={COLORS.textSecondary} />
+      </View>
       <TextInput
         style={styles.input}
         value={value}

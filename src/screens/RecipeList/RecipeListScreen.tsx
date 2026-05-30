@@ -292,42 +292,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FA', // 세련된 매트 화이트 배경
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#EBEBEB',
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  backButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F1F3F5',
-  },
-  backArrow: {
-    fontSize: 20,
-    color: '#343A40',
-    fontWeight: '700',
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#212529',
-    letterSpacing: -0.5,
-  },
-  headerPlaceholder: {
-    width: 36,
-  },
   scroll: {
     flex: 1,
   },

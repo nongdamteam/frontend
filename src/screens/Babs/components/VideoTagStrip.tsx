@@ -78,7 +78,7 @@ export function VideoTagStrip({
               pressed && { opacity: 0.85 },
             ]}
           >
-            {tag.thumbnailUrl ? (
+            {tag.thumbnailUrl && (
               typeof tag.thumbnailUrl === 'number' ? (
                 <Image source={tag.thumbnailUrl} style={styles.thumb} />
               ) : (
@@ -87,8 +87,6 @@ export function VideoTagStrip({
                   style={styles.thumb}
                 />
               )
-            ) : (
-              <View style={[styles.thumb, styles.thumbPlaceholder]} />
             )}
 
             <View style={styles.info}>

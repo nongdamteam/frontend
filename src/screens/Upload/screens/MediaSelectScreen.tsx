@@ -1,18 +1,15 @@
 import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { Typography } from '@/components/common/Typography';
+import { StyleSheet, View } from 'react-native';
 import { COLORS } from '@/constants/colors.local';
-import { RADIUS, SPACING } from '@/constants/layout';
+import { SPACING } from '@/constants/layout';
 import { useMediaLibrary } from '../hooks/useMediaLibrary';
 import { useUploadDraft } from '../hooks/useUploadDraft';
+import { GalleryGrid } from '../components/GalleryGrid';
+import { GalleryPhoto } from '../hooks/useGalleryPhotos';
 import { MediaPreview } from '../components/MediaPreview';
-import {
-  MediaSource,
-  MediaSourceTabs,
-} from '../components/MediaSourceTabs';
+import { MediaSourceTabs, MediaSource } from '../components/MediaSourceTabs';
 import { UploadHeader } from '../components/UploadHeader';
+import { SelectedMedia } from '@/@types/upload';
 
 interface MediaSelectScreenProps {
   onClose: () => void;
@@ -20,30 +17,39 @@ interface MediaSelectScreenProps {
 
 export function MediaSelectScreen({ onClose }: MediaSelectScreenProps) {
   const { draft, setMedia, goTo, canProceedToDetail } = useUploadDraft();
-  const { pickFromLibrary, captureFromCamera } = useMediaLibrary();
+  const { captureFromCamera } = useMediaLibrary();
   const [source, setSource] = useState<MediaSource>('gallery');
+
+  const handleGallerySelect = useCallback(
+    (photo: GalleryPhoto) => {
+      const media: SelectedMedia = {
+        type: photo.type,
+        uri: photo.uri,
+        width: photo.width,
+        height: photo.height,
+        durationMs: photo.durationMs,
+      };
+      setMedia(media);
+    },
+    [setMedia],
+  );
 
   const handleSourceChange = useCallback(
     async (next: MediaSource) => {
       setSource(next);
-      if (next === 'gallery') {
-        const m = await pickFromLibrary({ mediaType: 'mixed' });
-        if (m) setMedia(m);
-      } else if (next === 'photo') {
+      if (next === 'photo') {
         const m = await captureFromCamera({ mediaType: 'photo' });
         if (m) setMedia(m);
-      } else {
+        // 촬영 후 갤러리 탭으로 복귀
+        setSource('gallery');
+      } else if (next === 'video') {
         const m = await captureFromCamera({ mediaType: 'video' });
         if (m) setMedia(m);
+        setSource('gallery');
       }
     },
-    [pickFromLibrary, captureFromCamera, setMedia],
+    [captureFromCamera, setMedia],
   );
-
-  const handleReselect = useCallback(async () => {
-    const m = await pickFromLibrary({ mediaType: 'mixed' });
-    if (m) setMedia(m);
-  }, [pickFromLibrary, setMedia]);
 
   return (
     <View style={styles.container}>
@@ -56,50 +62,38 @@ export function MediaSelectScreen({ onClose }: MediaSelectScreenProps) {
         onTrailingPress={() => goTo('detail')}
       />
 
-      <BottomSheetScrollView contentContainerStyle={styles.scroll}>
+      {/* 상단 미리보기: 선택된 사진 or 플레이스홀더 */}
+      <View style={styles.preview}>
         <MediaPreview media={draft.media} />
+      </View>
 
-        <MediaSourceTabs value={source} onChange={handleSourceChange} />
+      {/* 탭 */}
+      <MediaSourceTabs value={source} onChange={handleSourceChange} />
 
-        {/* 갤러리 미리 보여줄 그리드는 RN 이미지 갤러리 API가 따로 필요해
-            여기선 "다시 선택" 버튼만 노출. */}
-        <View style={styles.actions}>
-          <Pressable
-            onPress={handleReselect}
-            style={({ pressed }) => [
-              styles.reselect,
-              pressed && { opacity: 0.7 },
-            ]}
-          >
-            <Icon name="images-outline" size={20} color={COLORS.textPrimary} />
-            <Typography variant="bodyStrong" color="textPrimary">
-              갤러리에서 다시 선택
-            </Typography>
-          </Pressable>
-
-          <Typography variant="caption" color="textMuted" align="center">
-            선택한 미디어가 미리보기에 표시됩니다.
-          </Typography>
+      {/* 갤러리 탭일 때 그리드 표시 */}
+      {source === 'gallery' && (
+        <View style={styles.grid}>
+          <GalleryGrid
+            selectedUri={draft.media?.uri ?? null}
+            onSelect={handleGallerySelect}
+          />
         </View>
-      </BottomSheetScrollView>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scroll: { paddingBottom: SPACING.xxl },
-  actions: {
-    padding: SPACING.lg,
-    gap: SPACING.md,
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
   },
-  reselect: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.sm,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.md,
+  preview: {
+    width: '100%',
+    aspectRatio: 1,
     backgroundColor: COLORS.surfaceMuted,
+  },
+  grid: {
+    flex: 1,
   },
 });

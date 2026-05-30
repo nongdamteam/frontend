@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { IconButton } from '@/components/common/IconButton';
 import { Typography } from '@/components/common/Typography';
 import { COLORS } from '@/constants/colors.local';
@@ -16,6 +17,11 @@ interface UploadHeaderProps {
   trailingDisabled?: boolean;
 }
 
+const TRAILING_ICON: Record<string, string> = {
+  '다음': 'chevron-forward',
+  '업로드': 'cloud-upload-outline',
+};
+
 export function UploadHeader({
   title,
   leadingIcon = 'close',
@@ -24,6 +30,8 @@ export function UploadHeader({
   onTrailingPress,
   trailingDisabled,
 }: UploadHeaderProps) {
+  const trailingIcon = trailingLabel ? (TRAILING_ICON[trailingLabel] ?? 'arrow-forward') : null;
+
   return (
     <View style={styles.container}>
       <IconButton
@@ -44,20 +52,26 @@ export function UploadHeader({
           disabled={trailingDisabled}
           style={({ pressed }) => [
             styles.trailing,
-            {
-              backgroundColor: trailingDisabled
-                ? COLORS.surfaceMuted
-                : COLORS.primary,
-              opacity: pressed ? 0.85 : 1,
-            },
+            pressed && !trailingDisabled && styles.trailingPressed,
           ]}
         >
           <Typography
             variant="captionStrong"
-            color={trailingDisabled ? 'textMuted' : 'textOnPrimary'}
+            style={[
+              styles.trailingText,
+              trailingDisabled ? styles.trailingTextDisabled : styles.trailingTextActive,
+            ]}
           >
             {trailingLabel}
           </Typography>
+          {trailingIcon && !trailingDisabled && (
+            <Icon
+              name={trailingIcon}
+              size={14}
+              color={COLORS.primaryPressed}
+              style={styles.trailingIcon}
+            />
+          )}
         </Pressable>
       ) : (
         <View style={styles.spacer} />
@@ -68,7 +82,7 @@ export function UploadHeader({
 
 const styles = StyleSheet.create({
   container: {
-    height: 52,
+    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -77,9 +91,34 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.divider,
   },
   trailing: {
-    paddingHorizontal: SPACING.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs + 2,
     borderRadius: RADIUS.pill,
+    gap: 2,
+  },
+  trailingActive: {
+    // no background — text only
+  },
+  trailingDisabled: {
+    // no background
+  },
+  trailingPressed: {
+    opacity: 0.5,
+  },
+  trailingText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  trailingTextActive: {
+    color: COLORS.primaryPressed,
+  },
+  trailingTextDisabled: {
+    color: COLORS.textMuted,
+  },
+  trailingIcon: {
+    marginTop: 1,
   },
   spacer: { width: 32 },
 });

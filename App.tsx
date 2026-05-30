@@ -13,6 +13,7 @@ import { COLORS } from './src/theme/colors';
 import { SCREEN } from './src/constants/layout';
 import { TabType } from './src/components/common/BottomNavigationBar';
 import { navigationService } from './src/services/navigationService';
+import { NongdamLogo } from './src/assets/icons/NongdamLogo';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,6 +28,7 @@ const TAB_ORDER: TabType[] = ['babs', 'home', 'cart', 'profile'];
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
+  const [showLanding, setShowLanding] = useState(true);
 
   return (
     <GestureHandlerRootView style={styles.root}>
@@ -35,10 +37,14 @@ function App() {
           <BottomSheetModalProvider>
             <NavigationContainer>
               <StatusBar
-                backgroundColor={COLORS.background}
-                barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+                backgroundColor={showLanding ? '#FFFFFF' : COLORS.background}
+                barStyle={showLanding ? 'dark-content' : (isDarkMode ? 'light-content' : 'dark-content')}
               />
-              <AppContent />
+              {showLanding ? (
+                <LandingScreen onFinish={() => setShowLanding(false)} />
+              ) : (
+                <AppContent />
+              )}
             </NavigationContainer>
           </BottomSheetModalProvider>
         </QueryClientProvider>
@@ -329,6 +335,70 @@ function AppContent() {
   );
 }
 
+function LandingScreen({ onFinish }: { onFinish: () => void }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const containerFade = useRef(new Animated.Value(1)).current;
+  const progress = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1.0,
+        duration: 800,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(progress, {
+        toValue: 1,
+        duration: 2000,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: false,
+      }),
+    ]).start(() => {
+      setTimeout(() => {
+        Animated.timing(containerFade, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }).start(() => {
+          onFinish();
+        });
+      }, 1400);
+    });
+  }, [fadeAnim, scaleAnim, containerFade, progress, onFinish]);
+
+  return (
+    <Animated.View style={[styles.landingContainer, { opacity: containerFade }]}>
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }], alignItems: 'center', width: '100%' }}>
+        <View style={styles.landingLogoWrapper}>
+          <NongdamLogo mode="all" width={200} height={290} />
+        </View>
+        <Text style={styles.landingSubtitle}>산지와 소비자를 잇는 맛있는 대화</Text>
+        <View style={styles.landingProgressBarContainer}>
+          <Animated.View
+            style={[
+              styles.landingProgressBar,
+              {
+                width: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0%', '100%'],
+                }),
+              },
+            ]}
+          />
+        </View>
+      </Animated.View>
+    </Animated.View>
+  );
+}
+
 const styles = StyleSheet.create({
   root: { flex: 1 },
   container: {
@@ -349,6 +419,44 @@ const styles = StyleSheet.create({
   placeholderText: {
     color: COLORS.inactive,
     fontSize: 16,
+  },
+  landingContainer: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+  },
+  landingLogoWrapper: {
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.12,
+    shadowRadius: 30,
+    elevation: 10,
+    borderRadius: 32,
+    backgroundColor: '#FFFFFF',
+    padding: 24,
+    marginBottom: 8,
+  },
+  landingSubtitle: {
+    color: '#8E8E93',
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 16,
+    letterSpacing: 0.5,
+  },
+  landingProgressBarContainer: {
+    width: '45%',
+    height: 4,
+    backgroundColor: '#EAEAEA',
+    borderRadius: 2,
+    marginTop: 40,
+    overflow: 'hidden',
+  },
+  landingProgressBar: {
+    height: '100%',
+    backgroundColor: COLORS.primary,
+    borderRadius: 2,
   },
 });
 

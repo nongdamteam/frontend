@@ -42,9 +42,9 @@ export function TagOverlay({
       style={[StyleSheet.absoluteFill, animatedStyle]}
     >
       {tags.map(tag => {
-        const left = tag.x * containerWidth;
-        const top = tag.y * containerHeight;
-        const placeRight = tag.x < 0.5;
+        const left = (tag.x ?? 0) * containerWidth;
+        const top = (tag.y ?? 0) * containerHeight;
+        const placeRight = (tag.x ?? 0) < 0.5;
 
         return (
           <View
@@ -66,7 +66,7 @@ export function TagOverlay({
                   placeRight ? styles.labelRight : styles.labelLeft,
                 ]}
               >
-                {tag.thumbnailUrl ? (
+                {tag.thumbnailUrl && (
                   typeof tag.thumbnailUrl === 'number' ? (
                     <Image source={tag.thumbnailUrl} style={styles.thumb} />
                   ) : (
@@ -75,8 +75,6 @@ export function TagOverlay({
                       style={styles.thumb}
                     />
                   )
-                ) : (
-                  <View style={[styles.thumb, styles.thumbPlaceholder]} />
                 )}
                 <View style={styles.labelText}>
                   <Typography variant="captionStrong" color="textPrimary">

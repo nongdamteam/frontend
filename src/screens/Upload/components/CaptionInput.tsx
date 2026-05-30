@@ -1,5 +1,4 @@
-import { StyleSheet, View } from 'react-native';
-import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { StyleSheet, View, TextInput } from 'react-native';
 import { Typography } from '@/components/common/Typography';
 import { COLORS } from '@/constants/colors.local';
 import { SPACING } from '@/constants/layout';
@@ -17,7 +16,7 @@ export function CaptionInput({
 }: CaptionInputProps) {
   return (
     <View style={styles.container}>
-      <BottomSheetTextInput
+      <TextInput
         value={value}
         onChangeText={onChange}
         multiline

@@ -1,7 +1,8 @@
 import React, { useRef, useCallback } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import BackButton from '@/components/common/BackButton';
 import { FeedItem } from '@/screens/Babs/components/FeedItem';
 import { ProductSheet, ProductSheetRef } from '@/screens/ProductSheet/ProductSheet';
 import { FEED_MOCK } from '@/assets/mock/feed';
@@ -31,15 +32,34 @@ export function RecipeDetailScreen() {
         caption: recipe.title,
         likeCount: recipe.likes,
         commentCount: Math.floor(recipe.likes / 4),
-        tags: recipe.tags.map((tag, idx) => ({
-          id: `${recipe.id}-tag-${idx}`,
-          keyword: tag.replace('#', '').trim(),
-          label: tag.replace('#', '').trim(),
-          averagePrice: 2000 + idx * 500,
-          thumbnailUrl: require('@/assets/images/tags/bomdong.png'),
-          x: 0.3 + idx * 0.2,
-          y: 0.5 + idx * 0.1,
-        })),
+        tags: recipe.tags.map((tag, idx) => {
+          const kw = tag.replace('#', '').trim();
+          let thumbnailUrl: any = undefined;
+
+          if (kw.includes('봄동') || kw.includes('겉절이')) {
+            thumbnailUrl = require('@/assets/images/tags/bomdong.png');
+          } else if (kw.includes('참기름')) {
+            thumbnailUrl = require('@/assets/images/tags/chamgireum.png');
+          } else if (kw.includes('고추장')) {
+            thumbnailUrl = require('@/assets/images/tags/gochujang.png');
+          } else if (kw.includes('냉이')) {
+            thumbnailUrl = require('@/assets/images/tags/naengi.png');
+          } else if (kw.includes('된장')) {
+            thumbnailUrl = require('@/assets/images/tags/doenjang.png');
+          } else if (kw.includes('상추')) {
+            thumbnailUrl = require('@/assets/images/tags/sangchu.png');
+          }
+
+          return {
+            id: `${recipe.id}-tag-${idx}`,
+            keyword: kw,
+            label: kw,
+            averagePrice: 2000 + idx * 500,
+            thumbnailUrl,
+            x: 0.3 + idx * 0.2,
+            y: 0.5 + idx * 0.1,
+          };
+        }),
       };
     }
   }
@@ -59,13 +79,9 @@ export function RecipeDetailScreen() {
   return (
     <View style={styles.container}>
       {/* Floating Back Button */}
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={[styles.backButton, { top: insets.top + 10 }]}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.backButtonText}>←</Text>
-      </TouchableOpacity>
+      <View style={[styles.backButtonWrapper, { top: insets.top + 10 }]}>
+        <BackButton onPress={() => navigation.goBack()} color="#FFFFFF" />
+      </View>
 
       <FeedItem
         item={feedItem}
@@ -83,7 +99,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000000',
   },
-  backButton: {
+  backButtonWrapper: {
     position: 'absolute',
     left: 16,
     zIndex: 10,
@@ -93,11 +109,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  backButtonText: {
-    color: '#FFFFFF',
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   center: {
     flex: 1,

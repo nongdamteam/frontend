@@ -2,17 +2,10 @@ import {
   forwardRef,
   useCallback,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, View } from 'react-native';
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetView,
-} from '@gorhom/bottom-sheet';
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import { StyleSheet, View, Modal, Pressable } from 'react-native';
 import { Typography } from '@/components/common/Typography';
 import { COLORS } from '@/constants/colors.local';
 import { RADIUS, SPACING } from '@/constants/layout';
@@ -38,56 +31,46 @@ interface UploadModalProps {
 
 export const UploadModal = forwardRef<UploadModalRef, UploadModalProps>(
   ({ onClose }, ref) => {
-  const modalRef = useRef<BottomSheetModal>(null);
-  const [resetKey, setResetKey] = useState(0);
+    const [visible, setVisible] = useState(false);
+    const [resetKey, setResetKey] = useState(0);
 
-  const close = useCallback(() => modalRef.current?.dismiss(), []);
+    const close = useCallback(() => {
+      setVisible(false);
+      setResetKey(k => k + 1);
+      onClose?.();
+    }, [onClose]);
 
-  useImperativeHandle(ref, () => ({
-    open: () => modalRef.current?.present(),
-    close,
-  }));
+    useImperativeHandle(ref, () => ({
+      open: () => setVisible(true),
+      close,
+    }));
 
-  const snapPoints = useMemo(() => ['95%'], []);
+    return (
+      <Modal
+        visible={visible}
+        animationType="slide"
+        transparent={true}
+        statusBarTranslucent={true}
+        onRequestClose={close}
+      >
+        <View style={localStyles.modalOverlay}>
+          {/* Backdrop press to close */}
+          <Pressable style={localStyles.backdrop} onPress={close} />
 
-  const handleDismiss = useCallback(() => {
-    // 시트 닫힐 때마다 Provider 재마운트 → 다음 오픈은 깨끗한 상태
-    setResetKey(k => k + 1);
-    onClose?.();
-  }, [onClose]);
-
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop
-        {...props}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        opacity={0.5}
-      />
-    ),
-    [],
-  );
-
-  return (
-    <BottomSheetModal
-      ref={modalRef}
-      snapPoints={snapPoints}
-      index={0}
-      enablePanDownToClose
-      stackBehavior="push"
-      enableDynamicSizing={false}
-      onDismiss={handleDismiss}
-      backdropComponent={renderBackdrop}
-      backgroundStyle={styles.background}
-      handleIndicatorStyle={styles.handle}
-    >
-      <BottomSheetView style={styles.content}>
-        <UploadProvider key={resetKey}>
-          <StepRouter onClose={close} />
-        </UploadProvider>
-      </BottomSheetView>
-    </BottomSheetModal>
-  );
+          {/* Modal content sheet taking 95% height */}
+          <View style={[styles.background, localStyles.sheetContainer]}>
+            <View style={localStyles.handleWrapper}>
+              <View style={styles.handle} />
+            </View>
+            <View style={styles.content}>
+              <UploadProvider key={resetKey}>
+                <StepRouter onClose={close} />
+              </UploadProvider>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
   },
 );
 
@@ -120,6 +103,25 @@ function StepRouter({ onClose }: { onClose: () => void }) {
   );
 }
 
+const localStyles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent', // Remove the 50% opacity black backdrop
+    justifyContent: 'flex-end',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFill,
+  },
+  sheetContainer: {
+    height: '95%',
+    width: '100%',
+  },
+  handleWrapper: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+});
+
 const styles = StyleSheet.create({
   background: {
     backgroundColor: COLORS.surface,
@@ -128,7 +130,9 @@ const styles = StyleSheet.create({
   },
   handle: {
     backgroundColor: COLORS.border,
-    width: 40,
+    width: 42,
+    height: 5,
+    borderRadius: 2.5,
   },
   content: { flex: 1 },
   placeholder: {
@@ -139,3 +143,4 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
 });
+export default UploadModal;
