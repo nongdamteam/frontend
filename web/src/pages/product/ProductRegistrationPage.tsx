@@ -64,6 +64,12 @@ type MediaItem = {
   url: string
 }
 
+type PurchaseOptionForm = {
+  label: string
+  price: string
+  stock: string
+}
+
 type AiPipelineStep = {
   id: string
   label: string
@@ -111,10 +117,15 @@ const aiPipelineSteps: AiPipelineStep[] = [
 
 function buildAiSalesCopy(form: ProductForm, selectedCertificationLabels: string[]) {
   const productName = form.name.trim() || '상품명 미입력'
-  const priceText = form.price
-    ? `${Number(form.price).toLocaleString('ko-KR')}원`
+  const firstOption = form.purchaseOptions[0] ?? { label: '', price: '', stock: '' }
+  const totalStock = form.purchaseOptions.reduce(
+    (sum, option) => sum + (Number(option.stock.replace(/[^\d]/g, '')) || 0),
+    0,
+  )
+  const priceText = firstOption.price
+    ? `${Number(firstOption.price).toLocaleString('ko-KR')}원`
     : '협의가'
-  const stockText = form.stock ? `${form.stock}개` : '수량 한정'
+  const stockText = totalStock > 0 ? `${totalStock.toLocaleString('ko-KR')}개` : '수량 한정'
   const originText = form.origin.trim() || '국내산'
   const harvestText = form.harvestDate || '매일 선별 출고'
   const shippingText =
@@ -184,6 +195,16 @@ function readDraft(): ProductForm {
 function toNumber(value: string) {
   const parsedValue = Number(value)
   return Number.isFinite(parsedValue) ? parsedValue : 0
+}
+
+function normalizePurchaseOptions(options: PurchaseOptionForm[]) {
+  return options
+    .map((option) => ({
+      label: option.label.trim(),
+      price: option.price.replace(/[^\d]/g, ''),
+      stock: option.stock.replace(/[^\d]/g, ''),
+    }))
+    .filter((option) => option.label || option.price || option.stock)
 }
 
 function createCampaignId() {
@@ -671,7 +692,9 @@ function ProductRegistrationPage({
   sidebarItemOverride,
   initialFormOverride,
   initialRepresentativeImageSrc,
+  deleteButtonLabel,
   submitButtonLabel,
+  onDeleteProduct,
   onSubmitProduct,
   disableDraftPersistence = false,
   onNavigate,
@@ -682,7 +705,9 @@ function ProductRegistrationPage({
   sidebarItemOverride?: string
   initialFormOverride?: Partial<ProductForm>
   initialRepresentativeImageSrc?: string
+  deleteButtonLabel?: string
   submitButtonLabel?: string
+  onDeleteProduct?: () => void
   onSubmitProduct?: (payload: {
     form: ProductForm
     representativeImageUrl: string
@@ -694,11 +719,21 @@ function ProductRegistrationPage({
   const [form, setForm] = useState<ProductForm>(() => {
     const base = disableDraftPersistence ? initialProductForm : readDraft()
     const merged = { ...base, ...(initialFormOverride ?? {}) }
+    const options =
+      merged.purchaseOptions && merged.purchaseOptions.length > 0
+        ? merged.purchaseOptions
+        : initialProductForm.purchaseOptions
 
-    if (merged.salesMethod === initialMode) return merged
+    if (merged.salesMethod === initialMode) {
+      return {
+        ...merged,
+        purchaseOptions: options,
+      }
+    }
 
     return {
       ...merged,
+      purchaseOptions: options,
       salesMethod: initialMode,
     }
   })
@@ -747,8 +782,27 @@ function ProductRegistrationPage({
     return categoryOptions.filter((category) => category.includes(keyword))
   }, [categoryKeyword])
 
-  const formattedPrice = form.price
-    ? `${Number(form.price).toLocaleString('ko-KR')}원`
+  const extendedProductStatusOptions = useMemo(
+    () => [
+      ...productStatusOptions,
+      { value: '\uBE44\uACF5\uAC1C' as ProductStatus, label: '\uBE44\uACF5\uAC1C' },
+      { value: '\uC608\uC57D \uD310\uB9E4' as ProductStatus, label: '\uC608\uC57D \uD310\uB9E4' },
+    ],
+    [],
+  )
+
+  const firstPurchaseOption = form.purchaseOptions[0] ?? {
+    label: '',
+    price: '',
+    stock: '',
+  }
+  const totalOptionStock = form.purchaseOptions.reduce(
+    (sum, option) => sum + (Number(option.stock.replace(/[^\d]/g, '')) || 0),
+    0,
+  )
+
+  const formattedPrice = firstPurchaseOption.price
+    ? `${Number(firstPurchaseOption.price).toLocaleString('ko-KR')}원`
     : '판매가 미입력'
 
   const formattedShippingFee =
@@ -788,7 +842,16 @@ function ProductRegistrationPage({
 
   const aiStepHasValueMap = useMemo(
     () => ({
-      validation: Boolean(form.name.trim() && form.price && form.stock),
+      validation: Boolean(
+        form.name.trim() &&
+          form.purchaseOptions.length > 0 &&
+          form.purchaseOptions.every(
+            (option) =>
+              option.label.trim() &&
+              option.price.replace(/[^\d]/g, '') &&
+              option.stock.replace(/[^\d]/g, ''),
+          ),
+      ),
       normalize: Boolean(form.origin.trim() && form.harvestDate && form.farmName.trim()),
       compose: Boolean(form.category && form.name.trim() && form.deliveryMethod),
       finalize: Boolean(form.certificationMarkIds.length > 0 && form.description.trim()),
@@ -802,8 +865,7 @@ function ProductRegistrationPage({
       form.harvestDate,
       form.name,
       form.origin,
-      form.price,
-      form.stock,
+      form.purchaseOptions,
     ],
   )
 
@@ -879,6 +941,58 @@ function ProductRegistrationPage({
       ...currentForm,
       [field]: value,
     }))
+  }
+
+  const updatePurchaseOption = (
+    index: number,
+    field: keyof PurchaseOptionForm,
+    value: string,
+  ) => {
+    setForm((currentForm) => {
+      const nextOptions = [...currentForm.purchaseOptions]
+      if (!nextOptions[index]) return currentForm
+      nextOptions[index] = {
+        ...nextOptions[index],
+        [field]:
+          field === 'price' || field === 'stock'
+            ? value.replace(/[^\d]/g, '')
+            : value,
+      }
+
+      const first = nextOptions[0] ?? { label: '', price: '', stock: '' }
+      return {
+        ...currentForm,
+        purchaseOptions: nextOptions,
+        price: first.price,
+        stock: first.stock,
+      }
+    })
+  }
+
+  const addPurchaseOption = () => {
+    setForm((currentForm) => ({
+      ...currentForm,
+      purchaseOptions: [
+        ...currentForm.purchaseOptions,
+        { label: '', price: '', stock: '' },
+      ],
+    }))
+  }
+
+  const removePurchaseOption = (index: number) => {
+    setForm((currentForm) => {
+      if (currentForm.purchaseOptions.length <= 1) return currentForm
+      const nextOptions = currentForm.purchaseOptions.filter(
+        (_option, optionIndex) => optionIndex !== index,
+      )
+      const first = nextOptions[0] ?? { label: '', price: '', stock: '' }
+      return {
+        ...currentForm,
+        purchaseOptions: nextOptions,
+        price: first.price,
+        stock: first.stock,
+      }
+    })
   }
 
   const registerMediaItems = (items: MediaItem[]) => {
@@ -1065,18 +1179,23 @@ function ProductRegistrationPage({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    const normalizedOptions = normalizePurchaseOptions(form.purchaseOptions)
+    const hasValidPurchaseOptions =
+      normalizedOptions.length > 0 &&
+      normalizedOptions.every(
+        (option) => option.label && option.price && option.stock,
+      )
 
     if (
       !form.category ||
       !form.name.trim() ||
       !representativeImage ||
-      !form.price ||
-      !form.stock ||
+      !hasValidPurchaseOptions ||
       !form.origin.trim()
     ) {
       setFeedback({
         tone: 'error',
-        text: '카테고리, 상품명, 대표이미지, 판매가, 재고, 원산지는 필수입니다.',
+        text: '카테고리, 상품명, 대표이미지, 구매 옵션(단위/가격/재고), 원산지는 필수입니다.',
       })
       setOpenSections((currentSections) => {
         const nextSections = new Set(currentSections)
@@ -1130,7 +1249,12 @@ function ProductRegistrationPage({
 
     if (onSubmitProduct) {
       onSubmitProduct({
-        form,
+        form: {
+          ...form,
+          price: normalizedOptions[0].price,
+          stock: normalizedOptions[0].stock,
+          purchaseOptions: normalizedOptions,
+        },
         representativeImageUrl: representativeImage.url,
         isGroupBuying,
       })
@@ -1138,13 +1262,17 @@ function ProductRegistrationPage({
       appendCommerceProduct({
         name: form.name,
         category: form.category,
-        status: form.status as '판매중' | '판매대기',
-        price: isGroupBuying ? form.groupBuyingPrice || form.price : form.price,
-        stock: form.stock,
+        status: form.status as '판매중' | '판매대기' | '비공개' | '예약 판매',
+        price:
+          isGroupBuying
+            ? form.groupBuyingPrice || normalizedOptions[0].price
+            : normalizedOptions[0].price,
+        stock: normalizedOptions[0].stock,
         shippingFee: form.shippingFee,
         shortDescription: form.description || form.name,
         detailDescription: form.description || form.name,
         imageSrc: representativeImage.url,
+        weightOptions: normalizedOptions,
       })
     }
 
@@ -1487,43 +1615,70 @@ function ProductRegistrationPage({
                 isOpen={openSections.has('sales')}
                 onToggle={toggleSection}
               >
-                <FormLine label="판매가" required>
-                  <div className="price-input">
-                    <input
-                      type="number"
-                      min="0"
-                      value={form.price}
-                      onChange={(event) =>
-                        updateField('price', event.target.value)
-                      }
-                      placeholder="숫자만 입력"
-                    />
-                    <span>원</span>
+                <FormLine label="구매 옵션" required>
+                  <div className="purchase-option-editor">
+                    {form.purchaseOptions.map((option, index) => (
+                      <div key={`purchase-option-${index}`} className="purchase-option-row">
+                        <input
+                          className="text-input"
+                          value={option.label}
+                          onChange={(event) =>
+                            updatePurchaseOption(index, 'label', event.target.value)
+                          }
+                          placeholder="옵션명 예: 1kg, 500g, 2박스"
+                        />
+                        <div className="price-input">
+                          <input
+                            type="number"
+                            min="0"
+                            value={option.price}
+                            onChange={(event) =>
+                              updatePurchaseOption(index, 'price', event.target.value)
+                            }
+                            placeholder="가격"
+                          />
+                          <span>원</span>
+                        </div>
+                        <div className="price-input quantity-input">
+                          <input
+                            type="number"
+                            min="0"
+                            value={option.stock}
+                            onChange={(event) =>
+                              updatePurchaseOption(index, 'stock', event.target.value)
+                            }
+                            placeholder="재고"
+                          />
+                          <span>개</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="button button--ghost purchase-option-remove"
+                          onClick={() => removePurchaseOption(index)}
+                          disabled={form.purchaseOptions.length <= 1}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      className="button button--muted purchase-option-add"
+                      onClick={addPurchaseOption}
+                    >
+                      옵션 추가
+                    </button>
                   </div>
                   <p className="field-note field-note--accent">
-                    농담 마켓을 통한 거래 시 주문관리/판매 수수료 및 그 외
-                    수수료가 부과될 수 있습니다.
+                    판매자가 옵션 단위(kg/g/박스 등), 옵션별 가격, 옵션별 재고를 직접 입력합니다.
                   </p>
-                </FormLine>
-
-                <FormLine label="재고수량" required>
-                  <div className="price-input quantity-input">
-                    <input
-                      type="number"
-                      min="0"
-                      value={form.stock}
-                      onChange={(event) => updateField('stock', event.target.value)}
-                      placeholder="숫자만 입력"
-                    />
-                    <span>개</span>
-                  </div>
                 </FormLine>
 
                 <FormLine label="판매상태">
                   <SegmentedControl<ProductStatus>
                     name="productStatus"
                     value={form.status}
-                    options={productStatusOptions}
+                    options={extendedProductStatusOptions}
                     onChange={(value) => updateField('status', value)}
                   />
                 </FormLine>
@@ -1924,7 +2079,7 @@ function ProductRegistrationPage({
                       </div>
                       <div>
                         <dt>재고</dt>
-                        <dd>{form.stock ? `${form.stock}개` : '미입력'}</dd>
+                        <dd>{totalOptionStock > 0 ? `${totalOptionStock.toLocaleString('ko-KR')}개` : '미입력'}</dd>
                       </div>
                       <div>
                         <dt>원산지</dt>
@@ -1992,6 +2147,15 @@ function ProductRegistrationPage({
                 >
                   임시저장
                 </button>
+                {onDeleteProduct && (
+                  <button
+                    type="button"
+                    className="button button--ghost"
+                    onClick={onDeleteProduct}
+                  >
+                    {deleteButtonLabel ?? '삭제'}
+                  </button>
+                )}
                 <button type="submit" className="button button--primary">
                   {submitButtonLabel ?? '저장하기'}
                 </button>

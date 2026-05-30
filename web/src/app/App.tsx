@@ -4,6 +4,7 @@ import { ProductRegistrationPage } from '../pages/product/ProductRegistrationPag
 import { ProductReviewManagementPage } from '../pages/product/ProductReviewManagementPage'
 import { ProductEditPage } from '../pages/product/ProductEditPage'
 import { StoreInfoPage } from '../pages/store/StoreInfoPage'
+import { OrderManagementPage } from '../pages/order/OrderManagementPage'
 import { featuredProductId } from '../services/mockDb/commerceDummyData'
 import type { AppView } from './appTypes'
 import '../styles/App.css'
@@ -42,6 +43,10 @@ function App() {
 
   if (view === 'store-info') {
     return <StoreInfoPage onNavigate={setView} />
+  }
+
+  if (view === 'order-management') {
+    return <OrderManagementPage onNavigate={setView} />
   }
 
   return (

@@ -11,9 +11,9 @@ type ProductDetailPageProps = {
 type TabId = 'description' | 'details' | 'reviews' | 'inquiries'
 
 const DEFAULT_WEIGHT_OPTIONS = [
-  { label: '1kg', price: 4500 },
-  { label: '2kg', price: 8900 },
-  { label: '4.5kg', price: 19900 },
+  { label: '1kg', price: 4500, stock: 120 },
+  { label: '2kg', price: 8900, stock: 80 },
+  { label: '4.5kg', price: 19900, stock: 45 },
 ]
 
 const STATIC_REVIEWS = [

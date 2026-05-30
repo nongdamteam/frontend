@@ -9,7 +9,7 @@ type ProductInquiryPageProps = {
   onOpenProductEdit?: (productId: number) => void
 }
 
-type ProductStatus = '전체' | '판매중' | '판매대기'
+type ProductStatus = '전체' | '판매중' | '판매대기' | '비공개' | '예약 판매'
 
 const PAGE_SIZE = 8
 
@@ -119,6 +119,8 @@ function ProductInquiryPage({ onNavigate, onOpenProductDetail, onOpenProductEdit
                   <option value="전체">전체</option>
                   <option value="판매중">판매중</option>
                   <option value="판매대기">판매대기</option>
+                  <option value="비공개">비공개</option>
+                  <option value="예약 판매">예약 판매</option>
                 </select>
               </label>
 
@@ -133,6 +135,9 @@ function ProductInquiryPage({ onNavigate, onOpenProductDetail, onOpenProductEdit
                 <article key={product.id} className="inquiry-shot-product-card">
                   <button type="button" className="inquiry-shot-product-media" onClick={() => onOpenProductDetail?.(product.id)}>
                     <img src={product.imageSrc} alt={product.name} />
+                    {product.status !== '판매중' && (
+                      <span className="inquiry-shot-product-status-overlay">{product.status}</span>
+                    )}
                   </button>
 
                   <div className="inquiry-shot-product-lines">
