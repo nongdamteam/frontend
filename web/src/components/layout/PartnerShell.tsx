@@ -122,27 +122,38 @@ export function PartnerShell({
   }
 
   const handleSidebarClick = (label: SidebarItem['label']) => {
-    onSidebarAction?.(label)
-
+    // Prefer navigating first to avoid intermediate re-renders in the current page
     if (label === '상품 등록') {
       onNavigate?.('product-register')
+      onSidebarAction?.(label)
+      return
     }
 
     if (label === '공동구매 등록') {
       onNavigate?.('group-buy-register')
+      onSidebarAction?.(label)
+      return
     }
 
     if (label === '상품 조회/수정') {
       onNavigate?.('product-inquiry')
+      onSidebarAction?.(label)
+      return
     }
 
     if (label === '진행중 공동구매') {
       onNavigate?.('group-buy-progress')
+      onSidebarAction?.(label)
+      return
     }
 
     if (label === '상점 정보') {
       onNavigate?.('store-info')
+      onSidebarAction?.(label)
+      return
     }
+
+    onSidebarAction?.(label)
   }
 
   return (

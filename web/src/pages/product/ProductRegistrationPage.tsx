@@ -608,7 +608,14 @@ function ProductRegistrationPage({
 }) {
   const [form, setForm] = useState<ProductForm>(() => {
     const base = disableDraftPersistence ? initialProductForm : readDraft()
-    return { ...base, ...(initialFormOverride ?? {}) }
+    const merged = { ...base, ...(initialFormOverride ?? {}) }
+
+    if (merged.salesMethod === initialMode) return merged
+
+    return {
+      ...merged,
+      salesMethod: initialMode,
+    }
   })
   const [activeView, setActiveView] = useState<ActiveView>(initialActiveView)
   const [storedGroupBuyingCampaigns, setStoredGroupBuyingCampaigns] = useState<
