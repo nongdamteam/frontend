@@ -34,25 +34,32 @@ export function GalleryGrid({ selectedUri, onSelect }: GalleryGridProps) {
           onPress={() => onSelect(item)}
           style={({ pressed }) => [
             styles.cell,
-            pressed && { opacity: 0.75 },
+            pressed && { opacity: 0.8 },
           ]}
         >
-          <Image source={{ uri: item.uri }} style={styles.cellImage} />
+          <Image
+            source={{ uri: item.uri }}
+            style={[
+              styles.cellImage,
+              isSelected && styles.cellImageSelected,
+            ]}
+          />
 
-          {/* 동영상 표시 */}
-          {item.type === 'video' && (
+          {/* 동영상 재생 아이콘 */}
+          {item.type === 'video' && !isSelected && (
             <View style={styles.videoOverlay}>
               <Icon name="play-circle" size={22} color="#fff" />
             </View>
           )}
 
-          {/* 선택된 사진 표시 */}
-          {isSelected && (
-            <View style={styles.selectedOverlay}>
-              <View style={styles.selectedCheck}>
-                <Icon name="checkmark" size={14} color="#fff" />
-              </View>
+          {/* 선택됐을 때: 이미지 어둡게 + 우측 상단 체크 뱃지 */}
+          {isSelected ? (
+            <View style={styles.checkBadge}>
+              <Icon name="checkmark" size={16} color="#fff" />
             </View>
+          ) : (
+            /* 선택 안 됐을 때: 우측 상단 빈 원 힌트 */
+            <View style={styles.emptyBadge} />
           )}
         </Pressable>
       );
@@ -133,25 +140,40 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  cellImageSelected: {
+    opacity: 0.65,
+  },
   videoOverlay: {
     position: 'absolute',
     bottom: 6,
     left: 6,
   },
-  selectedOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(168, 201, 158, 0.35)',
-    alignItems: 'flex-end',
-    justifyContent: 'flex-start',
-    padding: 6,
-  },
-  selectedCheck: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+  /* 선택됨: 우측 상단 그린 체크 뱃지 */
+  checkBadge: {
+    position: 'absolute',
+    top: 7,
+    right: 7,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: COLORS.primary,
+    borderWidth: 2.5,
+    borderColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 4,
+  },
+  /* 선택 안 됨: 우측 상단 빈 원 힌트 */
+  emptyBadge: {
+    position: 'absolute',
+    top: 7,
+    right: 7,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.85)',
+    backgroundColor: 'rgba(0,0,0,0.15)',
   },
   center: {
     flex: 1,
